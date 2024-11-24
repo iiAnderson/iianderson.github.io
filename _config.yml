@@ -14,35 +14,26 @@ timezone:
 # jekyll-seo-tag settings › https://github.com/jekyll/jekyll-seo-tag/blob/master/docs/usage.md
 # ↓ --------------------------
 
-title: Chirpy # the main title
+title: Robbie's Blog # the main title
 
-tagline: A text-focused Jekyll theme # it will display as the subtitle
+tagline: A blog covering topics from Railways to Software & Data
 
 description: >- # used by seo meta and the atom feed
-  A minimal, responsive and feature-rich Jekyll theme for technical writing.
+  Over the past few months, I have been developing an application to capture data from the Darwin National Rail Push Port feeds. These feeds contain information
+  on all train movements across the UK - along with scheduling and predictive timings of these services. With this blog I intend to dive into the
+  nuances of these feeds, along with posting analysis of the datasets i've built.
 
-# Fill in the protocol & hostname for your site.
-# E.g. 'https://username.github.io', note that it does not end with a '/'.
-url: ""
+url: "blog.robbiea.co.uk"
 
 github:
-  username: github_username # change to your GitHub username
-
-twitter:
-  username: twitter_username # change to your Twitter username
+  username: iiAnderson # change to your GitHub username
 
 social:
-  # Change to your full name.
-  # It will be displayed as the default author of the posts and the copyright owner in the Footer
-  name: your_full_name
-  email: example@domain.com # change to your email address
+  name: Robbie A
+  email: hello@robbiea.co.uk
   links:
-    # The first element serves as the copyright owner's link
-    - https://twitter.com/username # change to your Twitter homepage
-    - https://github.com/username # change to your GitHub homepage
-    # Uncomment below to add more social links
-    # - https://www.facebook.com/username
-    # - https://www.linkedin.com/in/username
+    - https://github.com/iAnderson
+    - https://www.linkedin.com/in/robertanderson1995/
 
 # Site Verification Settings
 webmaster_verifications:
@@ -98,7 +89,7 @@ theme_mode: # [light | dark]
 cdn:
 
 # the avatar on sidebar, support local or CORS resources
-avatar:
+avatar: '/assets/img/icon.jpg'
 
 # The URL of the site-wide social preview image used in SEO `og:image` meta tag.
 # It can be overridden by a customized `page.image` in front matter.
