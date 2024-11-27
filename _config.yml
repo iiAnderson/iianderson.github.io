@@ -23,7 +23,7 @@ description: >- # used by seo meta and the atom feed
   on all train movements across the UK - along with scheduling and predictive timings of these services. With this blog I intend to dive into the
   nuances of these feeds, along with posting analysis of the datasets i've built.
 
-url: "blog.robbiea.co.uk"
+url: "https://blog.robbiea.co.uk/"
 
 github:
   username: iiAnderson # change to your GitHub username
