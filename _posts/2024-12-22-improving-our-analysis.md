@@ -10,7 +10,7 @@ One approach could be to manually look up each TPL and find its corresponding lo
 
 ### A New Dataset: National Rail's Station Reference Data
 
-After scouring the web, I found a new dataset from the National Rail Marketplace titled the “Station Reference Data.” This dataset contains metadata for each station in the UK, including station names, TPLs, and two important identifiers: NLC and CRS. Yet more acronyms! As always, [Railway Codes](http://www.railwaycodes.org.uk/crs/crs0.shtm) helps clarify:
+After scouring the web, I found a new dataset from the National Rail Marketplace titled the [Station Reference Data](https://raildata.org.uk/dataProduct/P-027a0f6c-b6dc-46eb-b743-5c6e73137aaf) This dataset contains metadata for each station in the UK, including station names, TPLs, and two important identifiers: NLC and CRS. Yet more acronyms! As always, [Railway Codes](http://www.railwaycodes.org.uk/crs/crs0.shtm) helps clarify:
 
 - **NLC**: National Location Codes
 - **CRS**: Customer Reservation System
@@ -56,3 +56,174 @@ Interestingly, there’s one "rogue" entry: Willesden Junction. This station app
 ### Conclusion
 
 That’s it for today! As always, the Appendix will contain a link to the full dataset, along with the SQL queries used for this analysis.
+
+## Appendix:
+
+```
+WITH passenger_services AS (
+	SELECT rid,
+		update_id,
+		year,
+		month,
+		day
+	from services
+	where services.passenger = true
+),
+toc_for_rid AS (
+	SELECT rid,
+		toc
+	FROM service_details
+	WHERE toc <> ''
+	GROUP BY rid,
+		toc
+),
+data AS (
+	SELECT passenger_services.rid,
+		toc_for_rid.toc,
+		tpl,
+		passenger_services.day
+	FROM passenger_services
+		INNER JOIN locations ON passenger_services.update_id = locations.service_update_id
+		INNER JOIN toc_for_rid ON toc_for_rid.rid = passenger_services.rid
+	WHERE passenger_services.year = '2024'
+		AND passenger_services.month = '11'
+		AND (locations.type = 'ARR' OR locations.type = 'DEP')
+	GROUP BY passenger_services.rid,
+		toc,
+		tpl,
+		passenger_services.day
+),
+remapped AS (
+    SELECT rid, day, station_data.crs, station_data.name, toc
+    FROM data
+    LEFT JOIN station_data ON data.tpl = station_data.tiploc
+),
+aggregated AS (
+	SELECT crs,
+	    name,
+		day,
+		toc,
+		CASE
+			WHEN toc = 'SW' THEN 1 ELSE 0
+		END as SW,
+		CASE
+			WHEN toc = 'NT' THEN 1 ELSE 0
+		END as NT,
+		CASE
+			WHEN toc = 'LO' THEN 1 ELSE 0
+		END as LO,
+		CASE
+			WHEN toc = 'AW' THEN 1 ELSE 0
+		END as AW,
+		CASE
+			WHEN toc = 'CC' THEN 1 ELSE 0
+		END as CC,
+		CASE
+			WHEN toc = 'CH' THEN 1 ELSE 0
+		END as CH,
+		CASE
+			WHEN toc = 'XC' THEN 1 ELSE 0
+		END as XC,
+		CASE
+			WHEN toc = 'EM' THEN 1 ELSE 0
+		END as EM,
+		CASE
+			WHEN toc = 'HT' THEN 1 ELSE 0
+		END as HT,
+		CASE
+			WHEN toc = 'GX' THEN 1 ELSE 0
+		END as GX,
+		CASE
+			WHEN toc = 'GN' THEN 1 ELSE 0
+		END as GN,
+		CASE
+			WHEN toc = 'TL' THEN 1 ELSE 0
+		END as TL,
+		CASE
+			WHEN toc = 'GC' THEN 1 ELSE 0
+		END as GC,
+		CASE
+			WHEN toc = 'GW' THEN 1 ELSE 0
+		END as GW,
+		CASE
+			WHEN toc = 'LE' THEN 1 ELSE 0
+		END as LE,
+		CASE
+			WHEN toc = 'HC' THEN 1 ELSE 0
+		END as HC,
+		CASE
+			WHEN toc = 'HX' THEN 1 ELSE 0
+		END as HX,
+		CASE
+			WHEN toc = 'LM' THEN 1 ELSE 0
+		END as LM,
+		CASE
+			WHEN toc = 'LT' THEN 1 ELSE 0
+		END as LT,
+		CASE
+			WHEN toc = 'ME' THEN 1 ELSE 0
+		END as ME,
+		CASE
+			WHEN toc = 'TW' THEN 1 ELSE 0
+		END as TW,
+		CASE
+			WHEN toc = 'SR' THEN 1 ELSE 0
+		END as SR,
+		CASE
+			WHEN toc = 'SE' THEN 1 ELSE 0
+		END as SE,
+		CASE
+			WHEN toc = 'SN' THEN 1 ELSE 0
+		END as SN,
+		CASE
+			WHEN toc = 'XR' THEN 1 ELSE 0
+		END as XR,
+		CASE
+			WHEN toc = 'TP' THEN 1 ELSE 0
+		END as TP,
+		CASE
+			WHEN toc = 'VT' THEN 1 ELSE 0
+		END as VT,
+		CASE
+			WHEN toc = 'GR' THEN 1 ELSE 0
+		END as GR
+	from remapped
+	WHERE day = '19'
+)
+SELECT crs,
+    name,
+	day,
+	count(*) as total,
+	sum(SW) as "South Western",
+	sum(NT) as "Northern",
+	sum(LO) as "London Overground",
+	sum(AW) as "TfWales",
+	sum(CC) as "C2C",
+	sum(CH) as "Chiltern",
+	sum(XC) as "Cross Country",
+	sum(EM) as "East Midlands",
+	sum(HT) as "Hull Trains",
+	sum(GX) as "Gatwick Express",
+	sum(GN) as "Great Northern",
+	sum(TL) as "Thameslink",
+	sum(GC) as "Grand Central",
+	sum(GW) as "Great Western",
+	sum(LE) as "Greater Anglia",
+	sum(HC) + sum(HX) as "Heathrow",
+	sum(LM) as "West Midlands",
+	sum(LT) as "London Transport",
+	sum(ME) as "Merseyrail",
+	sum(TW) as "Tyne & Wear",
+	sum(SR) as "ScotRail",
+	sum(SE) as "SouthEastern",
+	sum(SN) as "Southern",
+	sum(XR) as "Elizabeth Line",
+	sum(VT) as "Avanti",
+	sum(GR) as "LNER"
+	from aggregated
+WHERE DAY = '19' AND name <> ''
+GROUP BY crs, name,
+	day
+ORDER BY count(*) DESC
+
+```
