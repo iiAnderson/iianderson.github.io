@@ -35,8 +35,10 @@ The Paddington services show a different story, only 5 of the days tested have a
 
 The Cardiff services show a similar amount of delays - although there are far fewer services which are not delayed at all. This however is the first route which has two different sections - Bristol to Cardiff services can come either from Taunton or Portsmouth. We can generate heatmaps for these separatley:
 
+Services via Taunton
 ![Alt text](https://blog.robbiea.co.uk/assets/img/BRI-CDF-TAU-March25.png "Bristol to Cardiff delays on the Taunton route by hour across march")
 
+Services via Portsmouth
 ![Alt text](https://blog.robbiea.co.uk/assets/img/BRI-CDF-PHBR-March25.png "Bristol to Cardiff delays on the Portsmouth route by hour across march")
 
 These extra heatmaps give us a little more insight into the source of the delays. I initally suspected the Portsmouth route due to the congestion around the south coast, but it seems the route towards Taunton illicits more delays on average.
