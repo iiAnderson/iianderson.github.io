@@ -41,7 +41,7 @@ Services via Taunton
 Services via Portsmouth
 ![Alt text](https://blog.robbiea.co.uk/assets/img/BRI-CDF-PHBR-March25.png "Bristol to Cardiff delays on the Portsmouth route by hour across march")
 
-These extra heatmaps give us a little more insight into the source of the delays. I initally suspected the Portsmouth route due to the congestion around the south coast, but it seems the route towards Taunton illicits more delays on average.
+These extra heatmaps give us a little more insight into the source of the delays. It looks as though the Portsmouth route contributes slightly more delays than the Taunton one, which makes sense given the congestion services suffer around Portsmouth and Southampton. 
 
 
 This is just a first pass analysis. In future posts, I'd like to look further at where these delays originate - and if it can show us bottlenecks in the network. 
