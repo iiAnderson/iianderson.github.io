@@ -1,3 +1,10 @@
+---
+layout: post
+title:  "Analysing popular routes out of Bristol Temple Meads"
+categories: [Railways, Analysis]
+tags: [railway, analysis, sql, darwin]
+---
+
 # Analysing popular routes out of Bristol Temple Meads
 
 Over the past few months, I have been designing a system for ingesting data from National Rail’s “Darwin Push Port Feed”. This feed contains live information about train movements, scheduling, and service alterations across the UK rail network. In this article, I will share some analysis of the service delays for three most popular (by passenger numbers) routes out of Bristol Temple Meads. These are the route to London Paddington, Cardiff Central and Clifton Down.
