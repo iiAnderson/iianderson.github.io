@@ -1,11 +1,10 @@
 ---
 layout: post
-title:  "Mind the Data Gap: Grouping Routes"
+title:  "Mind the Data Gap: Part 2. Grouping Routes"
 categories: [Railways, Analysis]
 tags: [railway, analysis, sql, darwin]
 ---
 
-# Mind the Data Gap: Making Sense of the Darwin Rail Feed
 ## Part 2: Grouping Routes
 
 Over the last year, I have been designing a system for ingesting data from National Rail’s “Darwin Push Port Feed”. This feed contains live information about train movements, scheduling and service alterations across the UK rail network. Today we’re going to delve into my first visualisation attempt for this data, a page which displays all routes from a select number of ‘Hub’ stations across the country, and strategies for grouping these together.

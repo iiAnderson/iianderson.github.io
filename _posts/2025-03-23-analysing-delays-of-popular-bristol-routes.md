@@ -14,7 +14,7 @@ Over the past few months, I have been designing a system for ingesting data from
 To obtain this data, I used the query found in the appendix, it does a few things of note:
 - It fetches the last SCHED and ACT (scheduled and actual) messages for each tpl. In this case, it's assumed the last schedule message is the most accurate.
 - It attempts to correct for day rollover (where a service runs into the next day) when computing the delay for a service. This is done by comparing the schedule and actual arrival times, and if the difference is off by more than half a day (I assume no service is this late!) then it adjusts the calculation to ensure the correct delay is calculated.
-- It assumees that the last and first locations updates are the destination and origin repsectively. This could be incorrect if there is data missing (ie I fail to capture the start of a service).
+- It assumes that the last and first locations updates are the destination and origin respectively. This could be incorrect if there is data missing (ie I fail to capture the start of a service).
 
 This query was then run for each three routes, pulling back the raw data into Google Sheets for analysis. 
 
@@ -36,7 +36,7 @@ Now that's done, we can see some lovely heat maps!
 
 ![Alt text](https://blog.robbiea.co.uk/assets/img/BRI-CFN-March25.png "Bristol to Clifton Down delays by hour across march")
 
-Instantly these charts show an interesting picture, each route has approximatley the same number of services per hour (approx 2), but we can clearly see the Clifton Down route have far fewer delays than the other routes - although this could be due to the reduced distance it covers.
+Instantly these charts show an interesting picture, each route has approximately the same number of services per hour (approx 2), but we can clearly see the Clifton Down route have far fewer delays than the other routes - although this could be due to the reduced distance it covers.
 
 The Paddington services show a different story, only 5 of the days tested have a maximum delayed of less than 15 minutes! There seems to be little pattern to the delays across a given day - although the last service of the day seems especially prone to delays.
 
@@ -49,7 +49,6 @@ Services via Portsmouth
 ![Alt text](https://blog.robbiea.co.uk/assets/img/BRI-CDF-PHBR-March25.png "Bristol to Cardiff delays on the Portsmouth route by hour across march")
 
 These extra heatmaps give us a little more insight into the source of the delays. It looks as though the Portsmouth route contributes slightly more delays than the Taunton one, which makes sense given the congestion services suffer around Portsmouth and Southampton. 
-
 
 This is just a first pass analysis. In future posts, I'd like to look further at where these delays originate - and if it can show us bottlenecks in the network. 
 
