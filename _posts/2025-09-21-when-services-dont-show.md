@@ -27,9 +27,9 @@ The data was pulled out of AWS Athena via SQL, whose output consisted of the day
 
 ## Top Performers
 
-Across the analysis period, 487 stations (19.3% of the network) achieved perfect reliability with zero cancelled services. The standout performer was Huddersfield, handling 3,752 services across 9 days without a single cancellation - suggesting that high volume doesn't preclude perfect performance.
+Across the analysis period, 487 stations (19.3% of the network) achieved perfect reliability with zero cancelled services. The standout performer was **Huddersfield**, handling 3,752 services across 9 days without a single cancellation - suggesting that high volume doesn't preclude perfect performance.
 
-There was a mix of stations included here too, some commuter stations such as Southend Victoria, rural stations like Llantwit Major, newer airport links to Heathrow Airport Terminal 5 and older metro systems such as stations on the Tyne and Wear metro lines. 
+There was a mix of stations included here too, some commuter stations such as **Southend Victoria**, rural stations like **Llantwit Major**, newer airport links to **Heathrow Airport Terminal 5** and older metro systems such as stations on the **Tyne and Wear metro** lines. 
 
 ## Poor Performers
 
