@@ -143,6 +143,43 @@
     </div>
 
     <script>
+        // TOC code to name mapping
+        const tocNames = {
+            'AW': 'Transport for Wales Rail',
+            'CC': 'c2c',
+            'CH': 'Chiltern Railways',
+            'CS': 'Caledonian Sleeper',
+            'EM': 'East Midlands Railway',
+            'ES': 'Eurostar',
+            'GC': 'Grand Central',
+            'GN': 'Great Northern',
+            'GR': 'London North Eastern Railway',
+            'GW': 'Great Western Railway',
+            'GX': 'Gatwick Express',
+            'HT': 'Hull Trains',
+            'HX': 'Heathrow Express',
+            'IL': 'Island Line',
+            'LD': 'Lumo',
+            'LE': 'Greater Anglia',
+            'LM': 'West Midlands Trains',
+            'LO': 'London Overground',
+            'LT': 'Transport for London',
+            'ME': 'Merseyrail',
+            'NT': 'Northern Trains',
+            'NY': 'Northern Trains (York)',
+            'SE': 'Southeastern',
+            'SJ': 'South Western Railway',
+            'SN': 'Southern',
+            'SR': 'ScotRail',
+            'SW': 'South Western Railway',
+            'TL': 'Thameslink',
+            'TP': 'TransPennine Express',
+            'TW': 'Transport for Wales',
+            'VT': 'Avanti West Coast',
+            'XC': 'CrossCountry',
+            'XR': 'Elizabeth line'
+        };
+
         // Embedded dataset
         const rawData = `date,toc,num_services,avg_timing_points_per_service,avg_delay_minutes,stddev_delay,max_max_delay_minutes,num_services_min_delay_under_5,total_delay_minutes,pct_0_5_mins,pct_5_15_mins,pct_15_30_mins,pct_30_plus_mins
 2025-09-11,AW,118,21.82,2.45,3.76,28,110,5689,79.66,19.49,0.85,0.0
@@ -643,15 +680,19 @@
 
         const dataset = parseCSV(rawData);
 
-        // Extract unique TOCs and sort them
-        const tocs = [...new Set(dataset.map(row => row.toc))].sort();
+        // Extract unique TOCs and sort them by name
+        const tocs = [...new Set(dataset.map(row => row.toc))].sort((a, b) => {
+            const nameA = tocNames[a] || a;
+            const nameB = tocNames[b] || b;
+            return nameA.localeCompare(nameB);
+        });
 
         // Populate dropdown
         const tocSelect = document.getElementById('toc-select');
         tocs.forEach(toc => {
             const option = document.createElement('option');
             option.value = toc;
-            option.textContent = toc;
+            option.textContent = tocNames[toc] || toc;
             tocSelect.appendChild(option);
         });
 
