@@ -143,7 +143,7 @@
     </div>
 
     <script>
-        // TOC code to name mapping
+        // TOC code to name mapping (only confirmed operators from Wikipedia)
         const tocNames = {
             'AW': 'Transport for Wales Rail',
             'CC': 'c2c',
@@ -163,18 +163,14 @@
             'LE': 'Greater Anglia',
             'LM': 'West Midlands Trains',
             'LO': 'London Overground',
-            'LT': 'Transport for London',
             'ME': 'Merseyrail',
             'NT': 'Northern Trains',
-            'NY': 'Northern Trains (York)',
             'SE': 'Southeastern',
-            'SJ': 'South Western Railway',
             'SN': 'Southern',
             'SR': 'ScotRail',
             'SW': 'South Western Railway',
             'TL': 'Thameslink',
             'TP': 'TransPennine Express',
-            'TW': 'Transport for Wales',
             'VT': 'Avanti West Coast',
             'XC': 'CrossCountry',
             'XR': 'Elizabeth line'
@@ -680,19 +676,21 @@
 
         const dataset = parseCSV(rawData);
 
-        // Extract unique TOCs and sort them by name
-        const tocs = [...new Set(dataset.map(row => row.toc))].sort((a, b) => {
-            const nameA = tocNames[a] || a;
-            const nameB = tocNames[b] || b;
-            return nameA.localeCompare(nameB);
-        });
+        // Extract unique TOCs and filter to only those with known names
+        const tocs = [...new Set(dataset.map(row => row.toc))]
+            .filter(toc => tocNames[toc])  // Only include TOCs with names
+            .sort((a, b) => {
+                const nameA = tocNames[a];
+                const nameB = tocNames[b];
+                return nameA.localeCompare(nameB);
+            });
 
         // Populate dropdown
         const tocSelect = document.getElementById('toc-select');
         tocs.forEach(toc => {
             const option = document.createElement('option');
             option.value = toc;
-            option.textContent = tocNames[toc] || toc;
+            option.textContent = tocNames[toc];
             tocSelect.appendChild(option);
         });
 
