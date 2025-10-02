@@ -6117,27 +6117,26 @@
                 }
 
                 const date = row.date;
-                const numServices = parseFloat(row.num_services) || 0;
 
                 if (!dateMap.has(date)) {
                     dateMap.set(date, {
-                        totalServices: 0,
-                        weighted0_5: 0,
-                        weighted5_15: 0,
-                        weighted15_30: 0,
-                        weighted30_plus: 0
+                        count: 0,
+                        sum0_5: 0,
+                        sum5_15: 0,
+                        sum15_30: 0,
+                        sum30_plus: 0
                     });
                 }
 
                 const entry = dateMap.get(date);
-                entry.totalServices += numServices;
-                entry.weighted0_5 += numServices * (parseFloat(row.pct_0_5_mins) || 0);
-                entry.weighted5_15 += numServices * (parseFloat(row.pct_5_15_mins) || 0);
-                entry.weighted15_30 += numServices * (parseFloat(row.pct_15_30_mins) || 0);
-                entry.weighted30_plus += numServices * (parseFloat(row.pct_30_plus_mins) || 0);
+                entry.count += 1;
+                entry.sum0_5 += parseFloat(row.pct_0_5_mins) || 0;
+                entry.sum5_15 += parseFloat(row.pct_5_15_mins) || 0;
+                entry.sum15_30 += parseFloat(row.pct_15_30_mins) || 0;
+                entry.sum30_plus += parseFloat(row.pct_30_plus_mins) || 0;
             });
 
-            // Calculate weighted averages
+            // Calculate averages
             const dates = Array.from(dateMap.keys()).sort();
             const result = {
                 dates: dates,
@@ -6149,11 +6148,11 @@
 
             dates.forEach(date => {
                 const entry = dateMap.get(date);
-                if (entry.totalServices > 0) {
-                    result.pct_0_5.push(entry.weighted0_5 / entry.totalServices);
-                    result.pct_5_15.push(entry.weighted5_15 / entry.totalServices);
-                    result.pct_15_30.push(entry.weighted15_30 / entry.totalServices);
-                    result.pct_30_plus.push(entry.weighted30_plus / entry.totalServices);
+                if (entry.count > 0) {
+                    result.pct_0_5.push(entry.sum0_5 / entry.count);
+                    result.pct_5_15.push(entry.sum5_15 / entry.count);
+                    result.pct_15_30.push(entry.sum15_30 / entry.count);
+                    result.pct_30_plus.push(entry.sum30_plus / entry.count);
                 } else {
                     result.pct_0_5.push(0);
                     result.pct_5_15.push(0);
