@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOC Performance Analysis</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.5.0/Recharts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ZAxis, Cell } = Recharts;
+
+        const BubbleChart = () => {
+            const [chartData, setChartData] = useState([]);
+            const [selectedDateRange, setSelectedDateRange] = useState('all');
+            const [customStartDate, setCustomStartDate] = useState('');
+            const [customEndDate, setCustomEndDate] = useState('');
+            const [delayThreshold, setDelayThreshold] = useState(5);
+            const [loading, setLoading] = useState(true);
+            const [allData, setAllData] = useState([]);
+            const [dateRange, setDateRange] = useState({ min: '', max: '' });
+
+            const tocNames = {
+                'AW': 'Transport for Wales Rail', 'CC': 'c2c', 'CH': 'Chiltern Railways',
+                'CS': 'Caledonian Sleeper', 'EM': 'East Midlands Railway', 'ES': 'Eurostar',
+                'GC': 'Grand Central', 'GN': 'Great Northern', 'GR': 'London North Eastern Railway',
+                'GW': 'Great Western Railway', 'GX': 'Gatwick Express', 'HT': 'Hull Trains',
+                'HX': 'Heathrow Express', 'IL': 'Island Line', 'LD': 'Lumo',
+                'LE': 'Greater Anglia', 'LM': 'West Midlands Trains', 'LO': 'London Overground',
+                'ME': 'Merseyrail', 'NT': 'Northern Trains', 'SE': 'Southeastern',
+                'SN': 'Southern', 'SR': 'ScotRail', 'SW': 'South Western Railway',
+                'TL': 'Thameslink', 'TP': 'TransPennine Express', 'VT': 'Avanti West Coast',
+                'XC': 'CrossCountry', 'XR': 'Elizabeth line'
+            };
+
+            useEffect(() => {
+                fetch('./toc-data.json')
+                    .then(response => response.json())
+                    .then(data => {
+                        const dates = data.map(d => d.date).sort();
+                        setDateRange({ min: dates[0], max: dates[dates.length - 1] });
+                        setCustomStartDate(dates[0]);
+                        setCustomEndDate(dates[dates.length - 1]);
+                        setAllData(data);
+                        processData(data, dates[0], dates[dates.length - 1], 5);
+                        setLoading(false);
+                    })
+                    .catch(error => {
+                        console.error('Error loading data:', error);
+                        setLoading(false);
+                    });
+            }, []);
+
+            const getDateRangeFromSelection = (selection) => {
+                const maxDate = new Date(dateRange.max);
+                let startDate, endDate;
+
+                switch(selection) {
+                    case 'this_week':
+                        endDate = maxDate;
+                        startDate = new Date(maxDate);
+                        startDate.setDate(startDate.getDate() - 7);
+                        break;
+                    case 'last_week':
+                        endDate = new Date(maxDate);
+                        endDate.setDate(endDate.getDate() - 7);
+                        startDate = new Date(endDate);
+                        startDate.setDate(startDate.getDate() - 7);
+                        break;
+                    case 'this_month':
+                        endDate = maxDate;
+                        startDate = new Date(maxDate);
+                        startDate.setDate(1);
+                        break;
+                    case 'all':
+                        startDate = new Date(dateRange.min);
+                        endDate = new Date(dateRange.max);
+                        break;
+                    case 'custom':
+                        startDate = new Date(customStartDate);
+                        endDate = new Date(customEndDate);
+                        break;
+                    default:
+                        startDate = new Date(dateRange.min);
+                        endDate = new Date(dateRange.max);
+                }
+
+                const formatDate = (d) => d.toISOString().split('T')[0];
+                return { start: formatDate(startDate), end: formatDate(endDate) };
+            };
+
+            const processData = (data, startDate, endDate, threshold) => {
+                const filteredData = data.filter(d => d.date >= startDate && d.date <= endDate);
+                const grouped = _.groupBy(filteredData, 'toc');
+
+                const bubbleData = Object.keys(grouped)
+                    .filter(toc => tocNames[toc])
+                    .map(toc => {
+                        const tocData = grouped[toc];
+                        const avgDelay = _.meanBy(tocData, 'avg_delay_minutes');
+                        const avgStdDev = _.meanBy(tocData, 'stddev_delay');
+                        
+                        let pctDelayed;
+                        if (threshold === 5) {
+                            pctDelayed = 100 - _.meanBy(tocData, 'pct_0_5_mins');
+                        } else if (threshold === 15) {
+                            pctDelayed = _.meanBy(tocData, 'pct_15_30_mins') + _.meanBy(tocData, 'pct_30_plus_mins');
+                        } else {
+                            pctDelayed = _.meanBy(tocData, 'pct_30_plus_mins');
+                        }
+
+                        const totalServices = _.sumBy(tocData, 'num_services');
+
+                        return {
+                            toc: tocNames[toc],
+                            tocCode: toc,
+                            avgDelay: avgDelay,
+                            stdDev: avgStdDev,
+                            pctDelayed: pctDelayed,
+                            totalServices: totalServices,
+                            z: pctDelayed * 100
+                        };
+                    });
+
+                setChartData(bubbleData);
+            };
+
+            const handleDateRangeChange = (e) => {
+                const selection = e.target.value;
+                setSelectedDateRange(selection);
+                const range = getDateRangeFromSelection(selection);
+                processData(allData, range.start, range.end, delayThreshold);
+            };
+
+            const handleCustomDateChange = () => {
+                processData(allData, customStartDate, customEndDate, delayThreshold);
+            };
+
+            const handleThresholdChange = (e) => {
+                const newThreshold = parseInt(e.target.value);
+                setDelayThreshold(newThreshold);
+                const range = getDateRangeFromSelection(selectedDateRange);
+                processData(allData, range.start, range.end, newThreshold);
+            };
+
+            const CustomTooltip = ({ active, payload }) => {
+                if (active && payload && payload.length) {
+                    const data = payload[0].payload;
+                    return React.createElement('div', { className: 'bg-white p-4 border border-gray-300 rounded shadow-lg max-w-xs' },
+                        React.createElement('p', { className: 'font-bold text-lg mb-2' }, data.toc),
+                        React.createElement('p', { className: 'text-xs text-gray-500 mb-2' }, `(${data.tocCode})`),
+                        React.createElement('p', { className: 'text-sm' }, 
+                            'Avg Delay: ',
+                            React.createElement('span', { className: 'font-semibold' }, `${data.avgDelay.toFixed(2)} mins`)
+                        ),
+                        React.createElement('p', { className: 'text-sm' }, 
+                            'Std Deviation: ',
+                            React.createElement('span', { className: 'font-semibold' }, `${data.stdDev.toFixed(2)} mins`)
+                        ),
+                        React.createElement('p', { className: 'text-sm' }, 
+                            `Delayed >${delayThreshold} mins: `,
+                            React.createElement('span', { className: 'font-semibold' }, `${data.pctDelayed.toFixed(2)}%`)
+                        ),
+                        React.createElement('p', { className: 'text-sm' }, 
+                            'Total Services: ',
+                            React.createElement('span', { className: 'font-semibold' }, data.totalServices.toLocaleString())
+                        )
+                    );
+                }
+                return null;
+            };
+
+            const getColor = (pctDelayed) => {
+                if (pctDelayed < 10) return '#10b981';
+                if (pctDelayed < 20) return '#f59e0b';
+                if (pctDelayed < 30) return '#ef4444';
+                return '#7c3aed';
+            };
+
+            const top5Best = [...chartData].sort((a, b) => a.pctDelayed - b.pctDelayed).slice(0, 5);
+            const top5Worst = [...chartData].sort((a, b) => b.pctDelayed - a.pctDelayed).slice(0, 5);
+
+            if (loading) {
+                return React.createElement('div', { className: 'flex items-center justify-center h-screen' }, 'Loading data...');
+            }
+
+            return React.createElement('div', { className: 'w-full min-h-screen p-8 bg-gray-50' },
+                React.createElement('h1', { className: 'text-3xl font-bold mb-4 text-gray-800' }, 'TOC Performance Analysis'),
+                
+                React.createElement('div', { className: 'mb-6 p-4 bg-white rounded-lg shadow' },
+                    React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4 mb-4' },
+                        React.createElement('div', null,
+                            React.createElement('label', { className: 'block text-sm font-medium text-gray-700 mb-2' }, 'Date Range'),
+                            React.createElement('select', {
+                                value: selectedDateRange,
+                                onChange: handleDateRangeChange,
+                                className: 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+                            },
+                                React.createElement('option', { value: 'all' }, `All Data (${dateRange.min} to ${dateRange.max})`),
+                                React.createElement('option', { value: 'this_week' }, 'This Week'),
+                                React.createElement('option', { value: 'last_week' }, 'Last Week'),
+                                React.createElement('option', { value: 'this_month' }, 'This Month'),
+                                React.createElement('option', { value: 'custom' }, 'Custom Range')
+                            )
+                        ),
+                        React.createElement('div', null,
+                            React.createElement('label', { className: 'block text-sm font-medium text-gray-700 mb-2' }, 'Delay Threshold'),
+                            React.createElement('select', {
+                                value: delayThreshold,
+                                onChange: handleThresholdChange,
+                                className: 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+                            },
+                                React.createElement('option', { value: 5 }, '>5 minutes'),
+                                React.createElement('option', { value: 15 }, '>15 minutes'),
+                                React.createElement('option', { value: 30 }, '>30 minutes')
+                            )
+                        )
+                    ),
+                    
+                    selectedDateRange === 'custom' && React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4 mb-4' },
+                        React.createElement('div', null,
+                            React.createElement('label', { className: 'block text-sm font-medium text-gray-700 mb-2' }, 'Start Date'),
+                            React.createElement('input', {
+                                type: 'date',
+                                value: customStartDate,
+                                min: dateRange.min,
+                                max: dateRange.max,
+                                onChange: (e) => setCustomStartDate(e.target.value),
+                                className: 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+                            })
+                        ),
+                        React.createElement('div', null,
+                            React.createElement('label', { className: 'block text-sm font-medium text-gray-700 mb-2' }, 'End Date'),
+                            React.createElement('input', {
+                                type: 'date',
+                                value: customEndDate,
+                                min: dateRange.min,
+                                max: dateRange.max,
+                                onChange: (e) => setCustomEndDate(e.target.value),
+                                className: 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+                            })
+                        ),
+                        React.createElement('div', { className: 'flex items-end' },
+                            React.createElement('button', {
+                                onClick: handleCustomDateChange,
+                                className: 'w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600'
+                            }, 'Apply')
+                        )
+                    ),
+                    
+                    React.createElement('div', { className: 'mt-4 text-sm text-gray-600' },
+                        React.createElement('p', null,
+                            React.createElement('span', { className: 'font-semibold' }, 'Bubble size: '),
+                            `Percentage of services delayed >${delayThreshold} mins`
+                        ),
+                        React.createElement('p', null,
+                            React.createElement('span', { className: 'font-semibold' }, 'Position: '),
+                            'X-axis = Avg delay, Y-axis = Consistency (std dev)'
+                        ),
+                        React.createElement('p', { className: 'mt-2' },
+                            React.createElement('span', { className: 'font-semibold' }, 'Colors: '),
+                            React.createElement('span', { className: 'ml-2 text-green-600' }, '●'), ' <10% delayed',
+                            React.createElement('span', { className: 'ml-2 text-orange-500' }, '●'), ' 10-20% delayed',
+                            React.createElement('span', { className: 'ml-2 text-red-500' }, '●'), ' 20-30% delayed',
+                            React.createElement('span', { className: 'ml-2 text-purple-600' }, '●'), ' >30% delayed'
+                        )
+                    )
+                ),
+                
+                React.createElement(ResponsiveContainer, { width: '100%', height: 500 },
+                    React.createElement(ScatterChart, { margin: { top: 20, right: 30, bottom: 60, left: 60 } },
+                        React.createElement(CartesianGrid, { strokeDasharray: '3 3' }),
+                        React.createElement(XAxis, {
+                            type: 'number', dataKey: 'avgDelay', name: 'Average Delay',
+                            label: { value: 'Average Delay (minutes)', position: 'insideBottom', offset: -10 }
+                        }),
+                        React.createElement(YAxis, {
+                            type: 'number', dataKey: 'stdDev', name: 'Standard Deviation',
+                            label: { value: 'Standard Deviation (minutes)', angle: -90, position: 'insideLeft' }
+                        }),
+                        React.createElement(ZAxis, { type: 'number', dataKey: 'z', range: [100, 3000] }),
+                        React.createElement(Tooltip, { content: React.createElement(CustomTooltip) }),
+                        React.createElement(Scatter, { data: chartData },
+                            chartData.map((entry, index) =>
+                                React.createElement(Cell, { key: `cell-${index}`, fill: getColor(entry.pctDelayed) })
+                            )
+                        )
+                    )
+                ),
+
+                React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6 mt-8' },
+                    React.createElement('div', { className: 'bg-white rounded-lg shadow p-6' },
+                        React.createElement('h2', { className: 'text-xl font-bold mb-4 text-green-700' }, 'Top 5 Best Performers'),
+                        React.createElement('table', { className: 'w-full text-sm' },
+                            React.createElement('thead', null,
+                                React.createElement('tr', { className: 'border-b' },
+                                    React.createElement('th', { className: 'text-left py-2' }, 'Rank'),
+                                    React.createElement('th', { className: 'text-left py-2' }, 'TOC'),
+                                    React.createElement('th', { className: 'text-right py-2' }, 'Avg Delay'),
+                                    React.createElement('th', { className: 'text-right py-2' }, `Delayed >${delayThreshold}m`),
+                                    React.createElement('th', { className: 'text-right py-2' }, 'Services')
+                                )
+                            ),
+                            React.createElement('tbody', null,
+                                top5Best.map((toc, idx) =>
+                                    React.createElement('tr', { key: idx, className: 'border-b' },
+                                        React.createElement('td', { className: 'py-2' }, idx + 1),
+                                        React.createElement('td', { className: 'py-2' }, toc.toc),
+                                        React.createElement('td', { className: 'text-right py-2' }, `${toc.avgDelay.toFixed(2)} min`),
+                                        React.createElement('td', { className: 'text-right py-2' }, `${toc.pctDelayed.toFixed(2)}%`),
+                                        React.createElement('td', { className: 'text-right py-2' }, toc.totalServices.toLocaleString())
+                                    )
+                                )
+                            )
+                        )
+                    ),
+
+                    React.createElement('div', { className: 'bg-white rounded-lg shadow p-6' },
+                        React.createElement('h2', { className: 'text-xl font-bold mb-4 text-red-700' }, 'Top 5 Worst Performers'),
+                        React.createElement('table', { className: 'w-full text-sm' },
+                            React.createElement('thead', null,
+                                React.createElement('tr', { className: 'border-b' },
+                                    React.createElement('th', { className: 'text-left py-2' }, 'Rank'),
+                                    React.createElement('th', { className: 'text-left py-2' }, 'TOC'),
+                                    React.createElement('th', { className: 'text-right py-2' }, 'Avg Delay'),
+                                    React.createElement('th', { className: 'text-right py-2' }, `Delayed >${delayThreshold}m`),
+                                    React.createElement('th', { className: 'text-right py-2' }, 'Services')
+                                )
+                            ),
+                            React.createElement('tbody', null,
+                                top5Worst.map((toc, idx) =>
+                                    React.createElement('tr', { key: idx, className: 'border-b' },
+                                        React.createElement('td', { className: 'py-2' }, idx + 1),
+                                        React.createElement('td', { className: 'py-2' }, toc.toc),
+                                        React.createElement('td', { className: 'text-right py-2' }, `${toc.avgDelay.toFixed(2)} min`),
+                                        React.createElement('td', { className: 'text-right py-2' }, `${toc.pctDelayed.toFixed(2)}%`),
+                                        React.createElement('td', { className: 'text-right py-2' }, toc.totalServices.toLocaleString())
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(BubbleChart));
+    </script>
+</body>
+</html>

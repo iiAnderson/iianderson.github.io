@@ -1,19 +1,27 @@
 ---
 layout: post
-title: "Service Delay Distribution: An Interactive Analysis"
+title: "Mind the Data Gap: Interactive Delays"
 categories: [Railways, Analysis]
 tags: [railway, analysis, visualization, darwin]
 ---
 
-# Service Delay Distribution: An Interactive Analysis
+# Part 4: Interactive Delays
 
-Over the period from September 11-25, 2025, we captured detailed delay data across the UK rail network. This visualization shows how services are distributed across four delay buckets: 0-5 minutes, 5-15 minutes, 15-30 minutes, and 30+ minutes delayed.
+Second only to cancellations, delays are frustrating reality of the UK rail network. We've all got a story of a train delayed by an hour, or just enough to miss a connection. It's infuriating. But how common are delays in reality? We often hear statistics bounded around on the news, but how true are those statistics? Let's dive into the world of analysing UK rail delays and see what we can uncover.
+
+To obtain the data, we need to build a query
 
 ## Interactive Visualization
 
 Use the dropdown below to filter by Train Operating Company (TOC) or view aggregated data across all operators.
 
 <iframe src="/assets/visualizations/delayed-services-stacked-area.html" width="100%" height="750" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;"></iframe>
+
+## TOC Performance Analysis
+
+Explore the relationship between average delays, consistency, and the percentage of delayed services across all operators. Bubble size represents the proportion of services delayed beyond your selected threshold.
+
+<iframe src="/assets/visualizations/delayed-services-bubble.html" width="100%" height="1200" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;"></iframe>
 
 ## Key Findings
 
