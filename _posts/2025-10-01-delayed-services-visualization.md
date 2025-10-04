@@ -17,5 +17,7 @@ Use the dropdown below to filter by Train Operating Company (TOC) or view aggreg
 
 ## Key Findings
 
-The stacked chart suggests
+The stacked chart suggests:
 - Rail performance is generally consistent, although there are notable drops on Sunday's - likely owing to the fact most rail staff are not contracted to work on Sundays.
+- Certain train operators (Avanti, Cross Country) have notably poorer performance than other operators.
+- Most trains run on time!
