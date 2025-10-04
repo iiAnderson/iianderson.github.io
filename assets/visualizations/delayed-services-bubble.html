@@ -16,11 +16,8 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // Wait for libraries to load
-        if (typeof Recharts === 'undefined') {
-            console.error('Recharts not loaded. Available globals:', Object.keys(window).filter(k => k.includes('echart')));
-            throw new Error('Recharts library not loaded');
-        }
+        // Recharts loads as _Recharts, create alias
+        const Recharts = window._Recharts || window.Recharts;
 
         const { useState, useEffect } = React;
         const { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ZAxis, Cell } = Recharts;
