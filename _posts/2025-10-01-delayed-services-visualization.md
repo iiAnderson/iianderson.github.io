@@ -9,7 +9,7 @@ tags: [railway, analysis, visualization, darwin]
 
 Second only to cancellations, delays are frustrating reality of the UK rail network. We've all got a story of a train delayed by an hour, or just enough to miss a connection. It's infuriating. But how common are delays in reality? We often hear statistics bounded around on the news, but how true are those statistics? Let's dive into the world of analysing UK rail delays and see what we can uncover.
 
-To obtain the data, we need to build a query
+To obtain the data, we need to build a query that takes all active passenger services over the past 6 months, and compute the delay between their latest registered schedule data and the actual times they ran. This will give us delay data for each station on a services' route. We can then compute the average, min and max of the delays across the stations along the route.
 
 ## Interactive Visualization
 
