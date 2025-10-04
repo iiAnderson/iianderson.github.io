@@ -7,7 +7,7 @@
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/react-is@18/umd/react-is.production.min.js"></script>
-    <script src="https://unpkg.com/recharts@2.5.0/umd/Recharts.min.js"></script>
+    <script src="https://unpkg.com/recharts@2.5.0/umd/Recharts.js"></script>
     <script src="https://unpkg.com/lodash@4.17.21/lodash.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,6 +16,12 @@
     <div id="root"></div>
 
     <script type="text/babel">
+        // Wait for libraries to load
+        if (typeof Recharts === 'undefined') {
+            console.error('Recharts not loaded. Available globals:', Object.keys(window).filter(k => k.includes('echart')));
+            throw new Error('Recharts library not loaded');
+        }
+
         const { useState, useEffect } = React;
         const { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ZAxis, Cell } = Recharts;
 
