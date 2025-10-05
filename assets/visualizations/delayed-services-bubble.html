@@ -4,359 +4,617 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TOC Performance Analysis</title>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/react-is@18/umd/react-is.production.min.js"></script>
-    <script src="https://unpkg.com/recharts@2.5.0/umd/Recharts.js"></script>
-    <script src="https://unpkg.com/lodash@4.17.21/lodash.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1a1a1a;
+                color: #e0e0e0;
+            }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .container {
+                background: #2d2d2d;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            }
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            h1 {
+                color: #e0e0e0;
+            }
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #f9fafb;
+            border-radius: 8px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .controls {
+                background-color: #1f1f1f;
+            }
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .controls label {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .controls label {
+                color: #d1d5db;
+            }
+        }
+
+        .controls select,
+        .controls input {
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .controls select,
+            .controls input {
+                background-color: #3d3d3d;
+                border-color: #555;
+                color: #e0e0e0;
+            }
+        }
+
+        .controls button {
+            padding: 8px 16px;
+            font-size: 14px;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            align-self: flex-end;
+        }
+
+        .controls button:hover {
+            background-color: #2563eb;
+        }
+
+        .info-box {
+            padding: 15px;
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .info-box {
+                background-color: #1e3a5f;
+                border-left-color: #60a5fa;
+            }
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 500px;
+            margin-bottom: 30px;
+        }
+
+        .tables-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .table-wrapper {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .table-wrapper {
+                background: #2d2d2d;
+            }
+        }
+
+        .table-wrapper h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .table-wrapper.best h2 {
+            color: #10b981;
+        }
+
+        .table-wrapper.worst h2 {
+            color: #ef4444;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            text-align: left;
+            padding: 10px 8px;
+            border-bottom: 2px solid #e5e7eb;
+            font-weight: 600;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            th {
+                border-bottom-color: #4b5563;
+            }
+        }
+
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            td {
+                border-bottom-color: #374151;
+            }
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .rank {
+            font-weight: 600;
+            color: #6b7280;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .rank {
+                color: #9ca3af;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div class="container">
+        <h1>TOC Performance Analysis</h1>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="date-range">Date Range</label>
+                <select id="date-range">
+                    <option value="all">All Data</option>
+                    <option value="this_week">This Week</option>
+                    <option value="last_week">Last Week</option>
+                    <option value="this_month">This Month</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="delay-threshold">Delay Threshold</label>
+                <select id="delay-threshold">
+                    <option value="5">&gt;5 minutes</option>
+                    <option value="15">&gt;15 minutes</option>
+                    <option value="30">&gt;30 minutes</option>
+                </select>
+            </div>
+
+            <div class="control-group" id="custom-start-group" style="display:none;">
+                <label for="custom-start">Start Date</label>
+                <input type="date" id="custom-start">
+            </div>
+
+            <div class="control-group" id="custom-end-group" style="display:none;">
+                <label for="custom-end">End Date</label>
+                <input type="date" id="custom-end">
+            </div>
+
+            <div class="control-group" id="custom-apply-group" style="display:none;">
+                <label>&nbsp;</label>
+                <button id="apply-custom">Apply</button>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <strong>Chart Guide:</strong>
+            <ul style="margin-left: 20px; margin-top: 8px;">
+                <li><strong>Bubble size:</strong> Percentage of services delayed beyond the selected threshold</li>
+                <li><strong>X-axis:</strong> Average delay in minutes</li>
+                <li><strong>Y-axis:</strong> Standard deviation (consistency - lower is more consistent)</li>
+            </ul>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background-color: #10b981;"></div>
+                    <span>&lt;10% delayed</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background-color: #f59e0b;"></div>
+                    <span>10-20% delayed</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background-color: #ef4444;"></div>
+                    <span>20-30% delayed</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background-color: #7c3aed;"></div>
+                    <span>&gt;30% delayed</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="bubbleChart"></canvas>
+        </div>
+
+        <div class="tables-container">
+            <div class="table-wrapper best">
+                <h2>Top 5 Best Performers</h2>
+                <table id="best-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>TOC</th>
+                            <th class="text-right">Avg Delay</th>
+                            <th class="text-right">Delayed</th>
+                            <th class="text-right">Services</th>
+                        </tr>
+                    </thead>
+                    <tbody id="best-tbody"></tbody>
+                </table>
+            </div>
+
+            <div class="table-wrapper worst">
+                <h2>Top 5 Worst Performers</h2>
+                <table id="worst-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>TOC</th>
+                            <th class="text-right">Avg Delay</th>
+                            <th class="text-right">Delayed</th>
+                            <th class="text-right">Services</th>
+                        </tr>
+                    </thead>
+                    <tbody id="worst-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // Embedded single-day data for testing
+        // Embedded data
         const EMBEDDED_DATA = [{"date":"2025-04-01","toc":"AW","num_services":649,"avg_timing_points_per_service":24.01,"avg_delay_minutes":2.49,"stddev_delay":6.76,"max_max_delay_minutes":83,"num_services_min_delay_under_5":616,"total_delay_minutes":42377,"pct_0_5_mins":86.13,"pct_5_15_mins":9.71,"pct_15_30_mins":2.93,"pct_30_plus_mins":1.23},{"date":"2025-04-01","toc":"CC","num_services":35,"avg_timing_points_per_service":20.69,"avg_delay_minutes":1.17,"stddev_delay":4.59,"max_max_delay_minutes":29,"num_services_min_delay_under_5":32,"total_delay_minutes":849,"pct_0_5_mins":91.43,"pct_5_15_mins":8.57,"pct_15_30_mins":0.0,"pct_30_plus_mins":0.0},{"date":"2025-04-01","toc":"CH","num_services":95,"avg_timing_points_per_service":13.22,"avg_delay_minutes":2.42,"stddev_delay":5.15,"max_max_delay_minutes":35,"num_services_min_delay_under_5":82,"total_delay_minutes":2996,"pct_0_5_mins":86.32,"pct_5_15_mins":6.84,"pct_15_30_mins":4.74,"pct_30_plus_mins":2.11},{"date":"2025-04-01","toc":"CS","num_services":3,"avg_timing_points_per_service":42.67,"avg_delay_minutes":11.33,"stddev_delay":14.74,"max_max_delay_minutes":27,"num_services_min_delay_under_5":1,"total_delay_minutes":1452,"pct_0_5_mins":33.33,"pct_5_15_mins":0.0,"pct_15_30_mins":33.33,"pct_30_plus_mins":33.33},{"date":"2025-04-01","toc":"EM","num_services":148,"avg_timing_points_per_service":19.22,"avg_delay_minutes":1.41,"stddev_delay":3.63,"max_max_delay_minutes":30,"num_services_min_delay_under_5":138,"total_delay_minutes":3987,"pct_0_5_mins":92.97,"pct_5_15_mins":5.68,"pct_15_30_mins":1.35,"pct_30_plus_mins":0.0},{"date":"2025-04-01","toc":"ES","num_services":43,"avg_timing_points_per_service":2.0,"avg_delay_minutes":0.65,"stddev_delay":1.43,"max_max_delay_minutes":6,"num_services_min_delay_under_5":38,"total_delay_minutes":56,"pct_0_5_mins":88.37,"pct_5_15_mins":11.63,"pct_15_30_mins":0.0,"pct_30_plus_mins":0.0},{"date":"2025-04-01","toc":"GC","num_services":12,"avg_timing_points_per_service":19.0,"avg_delay_minutes":8.5,"stddev_delay":10.66,"max_max_delay_minutes":32,"num_services_min_delay_under_5":6,"total_delay_minutes":1938,"pct_0_5_mins":50.0,"pct_5_15_mins":16.67,"pct_15_30_mins":25.0,"pct_30_plus_mins":8.33},{"date":"2025-04-01","toc":"GN","num_services":468,"avg_timing_points_per_service":11.56,"avg_delay_minutes":2.77,"stddev_delay":5.97,"max_max_delay_minutes":63,"num_services_min_delay_under_5":388,"total_delay_minutes":14980,"pct_0_5_mins":82.91,"pct_5_15_mins":10.26,"pct_15_30_mins":5.13,"pct_30_plus_mins":1.71},{"date":"2025-04-01","toc":"GR","num_services":145,"avg_timing_points_per_service":31.97,"avg_delay_minutes":5.97,"stddev_delay":9.64,"max_max_delay_minutes":71,"num_services_min_delay_under_5":96,"total_delay_minutes":27571,"pct_0_5_mins":66.21,"pct_5_15_mins":17.93,"pct_15_30_mins":6.9,"pct_30_plus_mins":8.97},{"date":"2025-04-01","toc":"GW","num_services":1182,"avg_timing_points_per_service":21.01,"avg_delay_minutes":1.74,"stddev_delay":4.11,"max_max_delay_minutes":54,"num_services_min_delay_under_5":1041,"total_delay_minutes":43136,"pct_0_5_mins":88.03,"pct_5_15_mins":9.87,"pct_15_30_mins":1.89,"pct_30_plus_mins":0.21},{"date":"2025-04-01","toc":"GX","num_services":65,"avg_timing_points_per_service":4.0,"avg_delay_minutes":0.63,"stddev_delay":1.69,"max_max_delay_minutes":11,"num_services_min_delay_under_5":61,"total_delay_minutes":164,"pct_0_5_mins":93.85,"pct_5_15_mins":4.62,"pct_15_30_mins":1.54,"pct_30_plus_mins":0.0},{"date":"2025-04-01","toc":"HT","num_services":11,"avg_timing_points_per_service":22.82,"avg_delay_minutes":8.91,"stddev_delay":11.3,"max_max_delay_minutes":35,"num_services_min_delay_under_5":5,"total_delay_minutes":2475,"pct_0_5_mins":45.45,"pct_5_15_mins":18.18,"pct_15_30_mins":18.18,"pct_30_plus_mins":18.18},{"date":"2025-04-01","toc":"HX","num_services":66,"avg_timing_points_per_service":4.0,"avg_delay_minutes":0.36,"stddev_delay":1.03,"max_max_delay_minutes":6,"num_services_min_delay_under_5":62,"total_delay_minutes":95,"pct_0_5_mins":93.94,"pct_5_15_mins":6.06,"pct_15_30_mins":0.0,"pct_30_plus_mins":0.0},{"date":"2025-04-01","toc":"IL","num_services":39,"avg_timing_points_per_service":6.0,"avg_delay_minutes":0.67,"stddev_delay":1.49,"max_max_delay_minutes":8,"num_services_min_delay_under_5":39,"total_delay_minutes":157,"pct_0_5_mins":100.0,"pct_5_15_mins":0.0,"pct_15_30_mins":0.0,"pct_30_plus_mins":0.0},{"date":"2025-04-01","toc":"LD","num_services":6,"avg_timing_points_per_service":13.17,"avg_delay_minutes":10.33,"stddev_delay":11.03,"max_max_delay_minutes":31,"num_services_min_delay_under_5":1,"total_delay_minutes":819,"pct_0_5_mins":16.67,"pct_5_15_mins":50.0,"pct_15_30_mins":0.0,"pct_30_plus_mins":33.33},{"date":"2025-04-01","toc":"LE","num_services":552,"avg_timing_points_per_service":16.83,"avg_delay_minutes":0.84,"stddev_delay":2.82,"max_max_delay_minutes":36,"num_services_min_delay_under_5":532,"total_delay_minutes":7797,"pct_0_5_mins":96.38,"pct_5_15_mins":3.08,"pct_15_30_mins":0.54,"pct_30_plus_mins":0.0},{"date":"2025-04-01","toc":"LM","num_services":1054,"avg_timing_points_per_service":13.73,"avg_delay_minutes":1.24,"stddev_delay":3.67,"max_max_delay_minutes":49,"num_services_min_delay_under_5":982,"total_delay_minutes":17930,"pct_0_5_mins":93.15,"pct_5_15_mins":5.23,"pct_15_30_mins":1.51,"pct_30_plus_mins":0.12},{"date":"2025-04-01","toc":"LO","num_services":725,"avg_timing_points_per_service":12.42,"avg_delay_minutes":2.3,"stddev_delay":5.79,"max_max_delay_minutes":65,"num_services_min_delay_under_5":585,"total_delay_minutes":20729,"pct_0_5_mins":80.69,"pct_5_15_mins":17.24,"pct_15_30_mins":2.07,"pct_30_plus_mins":0.0},{"date":"2025-04-01","toc":"LT","num_services":5,"avg_timing_points_per_service":6.4,"avg_delay_minutes":11.0,"stddev_delay":15.54,"max_max_delay_minutes":35,"num_services_min_delay_under_5":2,"total_delay_minutes":352,"pct_0_5_mins":40.0,"pct_5_15_mins":0.0,"pct_15_30_mins":0.0,"pct_30_plus_mins":60.0},{"date":"2025-04-01","toc":"ME","num_services":387,"avg_timing_points_per_service":12.48,"avg_delay_minutes":0.42,"stddev_delay":1.77,"max_max_delay_minutes":23,"num_services_min_delay_under_5":381,"total_delay_minutes":2026,"pct_0_5_mins":98.45,"pct_5_15_mins":1.55,"pct_15_30_mins":0.0,"pct_30_plus_mins":0.0},{"date":"2025-04-01","toc":"NT","num_services":1588,"avg_timing_points_per_service":19.47,"avg_delay_minutes":2.23,"stddev_delay":5.72,"max_max_delay_minutes":68,"num_services_min_delay_under_5":1363,"total_delay_minutes":68854,"pct_0_5_mins":85.84,"pct_5_15_mins":10.39,"pct_15_30_mins":2.89,"pct_30_plus_mins":0.88},{"date":"2025-04-01","toc":"SE","num_services":961,"avg_timing_points_per_service":15.88,"avg_delay_minutes":2.23,"stddev_delay":5.25,"max_max_delay_minutes":58,"num_services_min_delay_under_5":837,"total_delay_minutes":33847,"pct_0_5_mins":87.1,"pct_5_15_mins":9.36,"pct_15_30_mins":2.5,"pct_30_plus_mins":1.04},{"date":"2025-04-01","toc":"SN","num_services":980,"avg_timing_points_per_service":14.72,"avg_delay_minutes":2.46,"stddev_delay":5.57,"max_max_delay_minutes":67,"num_services_min_delay_under_5":856,"total_delay_minutes":35399,"pct_0_5_mins":87.35,"pct_5_15_mins":8.88,"pct_15_30_mins":2.86,"pct_30_plus_mins":0.92},{"date":"2025-04-01","toc":"SR","num_services":1362,"avg_timing_points_per_service":14.44,"avg_delay_minutes":2.03,"stddev_delay":4.75,"max_max_delay_minutes":47,"num_services_min_delay_under_5":1194,"total_delay_minutes":39862,"pct_0_5_mins":87.66,"pct_5_15_mins":9.62,"pct_15_30_mins":2.35,"pct_30_plus_mins":0.37},{"date":"2025-04-01","toc":"SW","num_services":1556,"avg_timing_points_per_service":14.57,"avg_delay_minutes":2.02,"stddev_delay":4.69,"max_max_delay_minutes":55,"num_services_min_delay_under_5":1387,"total_delay_minutes":45875,"pct_0_5_mins":89.14,"pct_5_15_mins":7.91,"pct_15_30_mins":2.18,"pct_30_plus_mins":0.77},{"date":"2025-04-01","toc":"TL","num_services":987,"avg_timing_points_per_service":13.34,"avg_delay_minutes":2.54,"stddev_delay":5.64,"max_max_delay_minutes":52,"num_services_min_delay_under_5":849,"total_delay_minutes":33044,"pct_0_5_mins":86.02,"pct_5_15_mins":10.13,"pct_15_30_mins":2.74,"pct_30_plus_mins":1.11},{"date":"2025-04-01","toc":"TP","num_services":301,"avg_timing_points_per_service":29.26,"avg_delay_minutes":6.91,"stddev_delay":10.35,"max_max_delay_minutes":80,"num_services_min_delay_under_5":218,"total_delay_minutes":60759,"pct_0_5_mins":72.43,"pct_5_15_mins":14.29,"pct_15_30_mins":6.98,"pct_30_plus_mins":6.31},{"date":"2025-04-01","toc":"VT","num_services":179,"avg_timing_points_per_service":28.32,"avg_delay_minutes":6.54,"stddev_delay":9.73,"max_max_delay_minutes":62,"num_services_min_delay_under_5":125,"total_delay_minutes":33174,"pct_0_5_mins":69.83,"pct_5_15_mins":15.08,"pct_15_30_mins":9.5,"pct_30_plus_mins":5.59},{"date":"2025-04-01","toc":"XC","num_services":435,"avg_timing_points_per_service":33.97,"avg_delay_minutes":5.95,"stddev_delay":10.68,"max_max_delay_minutes":101,"num_services_min_delay_under_5":312,"total_delay_minutes":87981,"pct_0_5_mins":71.72,"pct_5_15_mins":14.48,"pct_15_30_mins":7.82,"pct_30_plus_mins":5.98},{"date":"2025-04-01","toc":"XR","num_services":1170,"avg_timing_points_per_service":15.38,"avg_delay_minutes":1.63,"stddev_delay":4.34,"max_max_delay_minutes":53,"num_services_min_delay_under_5":1054,"total_delay_minutes":29360,"pct_0_5_mins":90.09,"pct_5_15_mins":7.35,"pct_15_30_mins":1.88,"pct_30_plus_mins":0.68}];
-    </script>
 
-    <script type="text/babel">
-        // Recharts loads as _Recharts, create alias
-        const Recharts = window._Recharts || window.Recharts;
-
-        const { useState, useEffect } = React;
-        const { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ZAxis, Cell } = Recharts;
-
-        const BubbleChart = () => {
-            const [chartData, setChartData] = useState([]);
-            const [selectedDateRange, setSelectedDateRange] = useState('all');
-            const [customStartDate, setCustomStartDate] = useState('');
-            const [customEndDate, setCustomEndDate] = useState('');
-            const [delayThreshold, setDelayThreshold] = useState(5);
-            const [loading, setLoading] = useState(true);
-            const [allData, setAllData] = useState([]);
-            const [dateRange, setDateRange] = useState({ min: '', max: '' });
-
-            const tocNames = {
-                'AW': 'Transport for Wales Rail', 'CC': 'c2c', 'CH': 'Chiltern Railways',
-                'CS': 'Caledonian Sleeper', 'EM': 'East Midlands Railway', 'ES': 'Eurostar',
-                'GC': 'Grand Central', 'GN': 'Great Northern', 'GR': 'London North Eastern Railway',
-                'GW': 'Great Western Railway', 'GX': 'Gatwick Express', 'HT': 'Hull Trains',
-                'HX': 'Heathrow Express', 'IL': 'Island Line', 'LD': 'Lumo',
-                'LE': 'Greater Anglia', 'LM': 'West Midlands Trains', 'LO': 'London Overground',
-                'ME': 'Merseyrail', 'NT': 'Northern Trains', 'SE': 'Southeastern',
-                'SN': 'Southern', 'SR': 'ScotRail', 'SW': 'South Western Railway',
-                'TL': 'Thameslink', 'TP': 'TransPennine Express', 'VT': 'Avanti West Coast',
-                'XC': 'CrossCountry', 'XR': 'Elizabeth line'
-            };
-
-            useEffect(() => {
-                // Embedded data - single day for testing
-                const data = EMBEDDED_DATA;
-                const dates = data.map(d => d.date).sort();
-                setDateRange({ min: dates[0], max: dates[dates.length - 1] });
-                setCustomStartDate(dates[0]);
-                setCustomEndDate(dates[dates.length - 1]);
-                setAllData(data);
-                processData(data, dates[0], dates[dates.length - 1], 5);
-                setLoading(false);
-            }, []);
-
-            const getDateRangeFromSelection = (selection) => {
-                const maxDate = new Date(dateRange.max);
-                let startDate, endDate;
-
-                switch(selection) {
-                    case 'this_week':
-                        endDate = maxDate;
-                        startDate = new Date(maxDate);
-                        startDate.setDate(startDate.getDate() - 7);
-                        break;
-                    case 'last_week':
-                        endDate = new Date(maxDate);
-                        endDate.setDate(endDate.getDate() - 7);
-                        startDate = new Date(endDate);
-                        startDate.setDate(startDate.getDate() - 7);
-                        break;
-                    case 'this_month':
-                        endDate = maxDate;
-                        startDate = new Date(maxDate);
-                        startDate.setDate(1);
-                        break;
-                    case 'all':
-                        startDate = new Date(dateRange.min);
-                        endDate = new Date(dateRange.max);
-                        break;
-                    case 'custom':
-                        startDate = new Date(customStartDate);
-                        endDate = new Date(customEndDate);
-                        break;
-                    default:
-                        startDate = new Date(dateRange.min);
-                        endDate = new Date(dateRange.max);
-                }
-
-                const formatDate = (d) => d.toISOString().split('T')[0];
-                return { start: formatDate(startDate), end: formatDate(endDate) };
-            };
-
-            const processData = (data, startDate, endDate, threshold) => {
-                const filteredData = data.filter(d => d.date >= startDate && d.date <= endDate);
-                const grouped = _.groupBy(filteredData, 'toc');
-
-                const bubbleData = Object.keys(grouped)
-                    .filter(toc => tocNames[toc])
-                    .map(toc => {
-                        const tocData = grouped[toc];
-                        const avgDelay = _.meanBy(tocData, 'avg_delay_minutes');
-                        const avgStdDev = _.meanBy(tocData, 'stddev_delay');
-                        
-                        let pctDelayed;
-                        if (threshold === 5) {
-                            pctDelayed = 100 - _.meanBy(tocData, 'pct_0_5_mins');
-                        } else if (threshold === 15) {
-                            pctDelayed = _.meanBy(tocData, 'pct_15_30_mins') + _.meanBy(tocData, 'pct_30_plus_mins');
-                        } else {
-                            pctDelayed = _.meanBy(tocData, 'pct_30_plus_mins');
-                        }
-
-                        const totalServices = _.sumBy(tocData, 'num_services');
-
-                        return {
-                            toc: tocNames[toc],
-                            tocCode: toc,
-                            avgDelay: avgDelay,
-                            stdDev: avgStdDev,
-                            pctDelayed: pctDelayed,
-                            totalServices: totalServices,
-                            z: pctDelayed * 100
-                        };
-                    });
-
-                setChartData(bubbleData);
-            };
-
-            const handleDateRangeChange = (e) => {
-                const selection = e.target.value;
-                setSelectedDateRange(selection);
-                const range = getDateRangeFromSelection(selection);
-                processData(allData, range.start, range.end, delayThreshold);
-            };
-
-            const handleCustomDateChange = () => {
-                processData(allData, customStartDate, customEndDate, delayThreshold);
-            };
-
-            const handleThresholdChange = (e) => {
-                const newThreshold = parseInt(e.target.value);
-                setDelayThreshold(newThreshold);
-                const range = getDateRangeFromSelection(selectedDateRange);
-                processData(allData, range.start, range.end, newThreshold);
-            };
-
-            const CustomTooltip = ({ active, payload }) => {
-                if (active && payload && payload.length) {
-                    const data = payload[0].payload;
-                    return React.createElement('div', { className: 'bg-white p-4 border border-gray-300 rounded shadow-lg max-w-xs' },
-                        React.createElement('p', { className: 'font-bold text-lg mb-2' }, data.toc),
-                        React.createElement('p', { className: 'text-xs text-gray-500 mb-2' }, `(${data.tocCode})`),
-                        React.createElement('p', { className: 'text-sm' }, 
-                            'Avg Delay: ',
-                            React.createElement('span', { className: 'font-semibold' }, `${data.avgDelay.toFixed(2)} mins`)
-                        ),
-                        React.createElement('p', { className: 'text-sm' }, 
-                            'Std Deviation: ',
-                            React.createElement('span', { className: 'font-semibold' }, `${data.stdDev.toFixed(2)} mins`)
-                        ),
-                        React.createElement('p', { className: 'text-sm' }, 
-                            `Delayed >${delayThreshold} mins: `,
-                            React.createElement('span', { className: 'font-semibold' }, `${data.pctDelayed.toFixed(2)}%`)
-                        ),
-                        React.createElement('p', { className: 'text-sm' }, 
-                            'Total Services: ',
-                            React.createElement('span', { className: 'font-semibold' }, data.totalServices.toLocaleString())
-                        )
-                    );
-                }
-                return null;
-            };
-
-            const getColor = (pctDelayed) => {
-                if (pctDelayed < 10) return '#10b981';
-                if (pctDelayed < 20) return '#f59e0b';
-                if (pctDelayed < 30) return '#ef4444';
-                return '#7c3aed';
-            };
-
-            const top5Best = [...chartData].sort((a, b) => a.pctDelayed - b.pctDelayed).slice(0, 5);
-            const top5Worst = [...chartData].sort((a, b) => b.pctDelayed - a.pctDelayed).slice(0, 5);
-
-            if (loading) {
-                return React.createElement('div', { className: 'flex items-center justify-center h-screen' }, 'Loading data...');
-            }
-
-            return React.createElement('div', { className: 'w-full min-h-screen p-8 bg-gray-50' },
-                React.createElement('h1', { className: 'text-3xl font-bold mb-4 text-gray-800' }, 'TOC Performance Analysis'),
-                
-                React.createElement('div', { className: 'mb-6 p-4 bg-white rounded-lg shadow' },
-                    React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-4 mb-4' },
-                        React.createElement('div', null,
-                            React.createElement('label', { className: 'block text-sm font-medium text-gray-700 mb-2' }, 'Date Range'),
-                            React.createElement('select', {
-                                value: selectedDateRange,
-                                onChange: handleDateRangeChange,
-                                className: 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
-                            },
-                                React.createElement('option', { value: 'all' }, `All Data (${dateRange.min} to ${dateRange.max})`),
-                                React.createElement('option', { value: 'this_week' }, 'This Week'),
-                                React.createElement('option', { value: 'last_week' }, 'Last Week'),
-                                React.createElement('option', { value: 'this_month' }, 'This Month'),
-                                React.createElement('option', { value: 'custom' }, 'Custom Range')
-                            )
-                        ),
-                        React.createElement('div', null,
-                            React.createElement('label', { className: 'block text-sm font-medium text-gray-700 mb-2' }, 'Delay Threshold'),
-                            React.createElement('select', {
-                                value: delayThreshold,
-                                onChange: handleThresholdChange,
-                                className: 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
-                            },
-                                React.createElement('option', { value: 5 }, '>5 minutes'),
-                                React.createElement('option', { value: 15 }, '>15 minutes'),
-                                React.createElement('option', { value: 30 }, '>30 minutes')
-                            )
-                        )
-                    ),
-                    
-                    selectedDateRange === 'custom' && React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4 mb-4' },
-                        React.createElement('div', null,
-                            React.createElement('label', { className: 'block text-sm font-medium text-gray-700 mb-2' }, 'Start Date'),
-                            React.createElement('input', {
-                                type: 'date',
-                                value: customStartDate,
-                                min: dateRange.min,
-                                max: dateRange.max,
-                                onChange: (e) => setCustomStartDate(e.target.value),
-                                className: 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
-                            })
-                        ),
-                        React.createElement('div', null,
-                            React.createElement('label', { className: 'block text-sm font-medium text-gray-700 mb-2' }, 'End Date'),
-                            React.createElement('input', {
-                                type: 'date',
-                                value: customEndDate,
-                                min: dateRange.min,
-                                max: dateRange.max,
-                                onChange: (e) => setCustomEndDate(e.target.value),
-                                className: 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
-                            })
-                        ),
-                        React.createElement('div', { className: 'flex items-end' },
-                            React.createElement('button', {
-                                onClick: handleCustomDateChange,
-                                className: 'w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600'
-                            }, 'Apply')
-                        )
-                    ),
-                    
-                    React.createElement('div', { className: 'mt-4 text-sm text-gray-600' },
-                        React.createElement('p', null,
-                            React.createElement('span', { className: 'font-semibold' }, 'Bubble size: '),
-                            `Percentage of services delayed >${delayThreshold} mins`
-                        ),
-                        React.createElement('p', null,
-                            React.createElement('span', { className: 'font-semibold' }, 'Position: '),
-                            'X-axis = Avg delay, Y-axis = Consistency (std dev)'
-                        ),
-                        React.createElement('p', { className: 'mt-2' },
-                            React.createElement('span', { className: 'font-semibold' }, 'Colors: '),
-                            React.createElement('span', { className: 'ml-2 text-green-600' }, '●'), ' <10% delayed',
-                            React.createElement('span', { className: 'ml-2 text-orange-500' }, '●'), ' 10-20% delayed',
-                            React.createElement('span', { className: 'ml-2 text-red-500' }, '●'), ' 20-30% delayed',
-                            React.createElement('span', { className: 'ml-2 text-purple-600' }, '●'), ' >30% delayed'
-                        )
-                    )
-                ),
-                
-                React.createElement(ResponsiveContainer, { width: '100%', height: 500 },
-                    React.createElement(ScatterChart, { margin: { top: 20, right: 30, bottom: 60, left: 60 } },
-                        React.createElement(CartesianGrid, { strokeDasharray: '3 3' }),
-                        React.createElement(XAxis, {
-                            type: 'number', dataKey: 'avgDelay', name: 'Average Delay',
-                            label: { value: 'Average Delay (minutes)', position: 'insideBottom', offset: -10 }
-                        }),
-                        React.createElement(YAxis, {
-                            type: 'number', dataKey: 'stdDev', name: 'Standard Deviation',
-                            label: { value: 'Standard Deviation (minutes)', angle: -90, position: 'insideLeft' }
-                        }),
-                        React.createElement(ZAxis, { type: 'number', dataKey: 'z', range: [100, 3000] }),
-                        React.createElement(Tooltip, { content: React.createElement(CustomTooltip) }),
-                        React.createElement(Scatter, { data: chartData },
-                            chartData.map((entry, index) =>
-                                React.createElement(Cell, { key: `cell-${index}`, fill: getColor(entry.pctDelayed) })
-                            )
-                        )
-                    )
-                ),
-
-                React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-6 mt-8' },
-                    React.createElement('div', { className: 'bg-white rounded-lg shadow p-6' },
-                        React.createElement('h2', { className: 'text-xl font-bold mb-4 text-green-700' }, 'Top 5 Best Performers'),
-                        React.createElement('table', { className: 'w-full text-sm' },
-                            React.createElement('thead', null,
-                                React.createElement('tr', { className: 'border-b' },
-                                    React.createElement('th', { className: 'text-left py-2' }, 'Rank'),
-                                    React.createElement('th', { className: 'text-left py-2' }, 'TOC'),
-                                    React.createElement('th', { className: 'text-right py-2' }, 'Avg Delay'),
-                                    React.createElement('th', { className: 'text-right py-2' }, `Delayed >${delayThreshold}m`),
-                                    React.createElement('th', { className: 'text-right py-2' }, 'Services')
-                                )
-                            ),
-                            React.createElement('tbody', null,
-                                top5Best.map((toc, idx) =>
-                                    React.createElement('tr', { key: idx, className: 'border-b' },
-                                        React.createElement('td', { className: 'py-2' }, idx + 1),
-                                        React.createElement('td', { className: 'py-2' }, toc.toc),
-                                        React.createElement('td', { className: 'text-right py-2' }, `${toc.avgDelay.toFixed(2)} min`),
-                                        React.createElement('td', { className: 'text-right py-2' }, `${toc.pctDelayed.toFixed(2)}%`),
-                                        React.createElement('td', { className: 'text-right py-2' }, toc.totalServices.toLocaleString())
-                                    )
-                                )
-                            )
-                        )
-                    ),
-
-                    React.createElement('div', { className: 'bg-white rounded-lg shadow p-6' },
-                        React.createElement('h2', { className: 'text-xl font-bold mb-4 text-red-700' }, 'Top 5 Worst Performers'),
-                        React.createElement('table', { className: 'w-full text-sm' },
-                            React.createElement('thead', null,
-                                React.createElement('tr', { className: 'border-b' },
-                                    React.createElement('th', { className: 'text-left py-2' }, 'Rank'),
-                                    React.createElement('th', { className: 'text-left py-2' }, 'TOC'),
-                                    React.createElement('th', { className: 'text-right py-2' }, 'Avg Delay'),
-                                    React.createElement('th', { className: 'text-right py-2' }, `Delayed >${delayThreshold}m`),
-                                    React.createElement('th', { className: 'text-right py-2' }, 'Services')
-                                )
-                            ),
-                            React.createElement('tbody', null,
-                                top5Worst.map((toc, idx) =>
-                                    React.createElement('tr', { key: idx, className: 'border-b' },
-                                        React.createElement('td', { className: 'py-2' }, idx + 1),
-                                        React.createElement('td', { className: 'py-2' }, toc.toc),
-                                        React.createElement('td', { className: 'text-right py-2' }, `${toc.avgDelay.toFixed(2)} min`),
-                                        React.createElement('td', { className: 'text-right py-2' }, `${toc.pctDelayed.toFixed(2)}%`),
-                                        React.createElement('td', { className: 'text-right py-2' }, toc.totalServices.toLocaleString())
-                                    )
-                                )
-                            )
-                        )
-                    )
-                )
-            );
+        const tocNames = {
+            'AW': 'Transport for Wales Rail', 'CC': 'c2c', 'CH': 'Chiltern Railways',
+            'CS': 'Caledonian Sleeper', 'EM': 'East Midlands Railway', 'ES': 'Eurostar',
+            'GC': 'Grand Central', 'GN': 'Great Northern', 'GR': 'London North Eastern Railway',
+            'GW': 'Great Western Railway', 'GX': 'Gatwick Express', 'HT': 'Hull Trains',
+            'HX': 'Heathrow Express', 'IL': 'Island Line', 'LD': 'Lumo',
+            'LE': 'Greater Anglia', 'LM': 'West Midlands Trains', 'LO': 'London Overground',
+            'ME': 'Merseyrail', 'NT': 'Northern Trains', 'SE': 'Southeastern',
+            'SN': 'Southern', 'SR': 'ScotRail', 'SW': 'South Western Railway',
+            'TL': 'Thameslink', 'TP': 'TransPennine Express', 'VT': 'Avanti West Coast',
+            'XC': 'CrossCountry', 'XR': 'Elizabeth line'
         };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(React.createElement(BubbleChart));
+        let chartInstance = null;
+        let allData = EMBEDDED_DATA;
+        let currentThreshold = 5;
+
+        // Helper functions
+        function groupBy(array, key) {
+            return array.reduce((result, item) => {
+                const group = item[key];
+                if (!result[group]) result[group] = [];
+                result[group].push(item);
+                return result;
+            }, {});
+        }
+
+        function mean(array, key) {
+            if (array.length === 0) return 0;
+            return array.reduce((sum, item) => sum + item[key], 0) / array.length;
+        }
+
+        function sum(array, key) {
+            return array.reduce((total, item) => total + item[key], 0);
+        }
+
+        function getColor(pctDelayed) {
+            if (pctDelayed < 10) return '#10b981';
+            if (pctDelayed < 20) return '#f59e0b';
+            if (pctDelayed < 30) return '#ef4444';
+            return '#7c3aed';
+        }
+
+        function processData(data, startDate, endDate, threshold) {
+            const filteredData = data.filter(d => d.date >= startDate && d.date <= endDate);
+            const grouped = groupBy(filteredData, 'toc');
+
+            const bubbleData = Object.keys(grouped)
+                .filter(toc => tocNames[toc])
+                .map(toc => {
+                    const tocData = grouped[toc];
+                    const avgDelay = mean(tocData, 'avg_delay_minutes');
+                    const avgStdDev = mean(tocData, 'stddev_delay');
+
+                    let pctDelayed;
+                    if (threshold === 5) {
+                        pctDelayed = 100 - mean(tocData, 'pct_0_5_mins');
+                    } else if (threshold === 15) {
+                        pctDelayed = mean(tocData, 'pct_15_30_mins') + mean(tocData, 'pct_30_plus_mins');
+                    } else {
+                        pctDelayed = mean(tocData, 'pct_30_plus_mins');
+                    }
+
+                    const totalServices = sum(tocData, 'num_services');
+
+                    return {
+                        x: avgDelay,
+                        y: avgStdDev,
+                        r: Math.sqrt(pctDelayed) * 3, // Scale radius for visibility
+                        toc: tocNames[toc],
+                        tocCode: toc,
+                        avgDelay: avgDelay,
+                        stdDev: avgStdDev,
+                        pctDelayed: pctDelayed,
+                        totalServices: totalServices,
+                        color: getColor(pctDelayed)
+                    };
+                });
+
+            return bubbleData;
+        }
+
+        function updateChart(data) {
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            const ctx = document.getElementById('bubbleChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'bubble',
+                data: {
+                    datasets: [{
+                        label: 'TOC Performance',
+                        data: data,
+                        backgroundColor: data.map(d => d.color + '80'), // Add transparency
+                        borderColor: data.map(d => d.color),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].raw.toc;
+                                },
+                                label: function(context) {
+                                    const data = context.raw;
+                                    return [
+                                        `Code: ${data.tocCode}`,
+                                        `Avg Delay: ${data.avgDelay.toFixed(2)} mins`,
+                                        `Std Deviation: ${data.stdDev.toFixed(2)} mins`,
+                                        `Delayed >${currentThreshold} mins: ${data.pctDelayed.toFixed(2)}%`,
+                                        `Total Services: ${data.totalServices.toLocaleString()}`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Average Delay (minutes)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Standard Deviation (minutes)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            updateTables(data);
+        }
+
+        function updateTables(data) {
+            const sorted = [...data].sort((a, b) => a.pctDelayed - b.pctDelayed);
+            const best5 = sorted.slice(0, 5);
+            const worst5 = sorted.slice(-5).reverse();
+
+            const bestTbody = document.getElementById('best-tbody');
+            const worstTbody = document.getElementById('worst-tbody');
+
+            bestTbody.innerHTML = best5.map((toc, idx) => `
+                <tr>
+                    <td class="rank">${idx + 1}</td>
+                    <td>${toc.toc}</td>
+                    <td class="text-right">${toc.avgDelay.toFixed(2)} min</td>
+                    <td class="text-right">${toc.pctDelayed.toFixed(2)}%</td>
+                    <td class="text-right">${toc.totalServices.toLocaleString()}</td>
+                </tr>
+            `).join('');
+
+            worstTbody.innerHTML = worst5.map((toc, idx) => `
+                <tr>
+                    <td class="rank">${idx + 1}</td>
+                    <td>${toc.toc}</td>
+                    <td class="text-right">${toc.avgDelay.toFixed(2)} min</td>
+                    <td class="text-right">${toc.pctDelayed.toFixed(2)}%</td>
+                    <td class="text-right">${toc.totalServices.toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
+
+        function getDateRange() {
+            const dates = allData.map(d => d.date).sort();
+            return { min: dates[0], max: dates[dates.length - 1] };
+        }
+
+        function getDateRangeFromSelection(selection, customStart, customEnd) {
+            const dateRange = getDateRange();
+            const maxDate = new Date(dateRange.max);
+            let startDate, endDate;
+
+            switch(selection) {
+                case 'this_week':
+                    endDate = maxDate;
+                    startDate = new Date(maxDate);
+                    startDate.setDate(startDate.getDate() - 7);
+                    break;
+                case 'last_week':
+                    endDate = new Date(maxDate);
+                    endDate.setDate(endDate.getDate() - 7);
+                    startDate = new Date(endDate);
+                    startDate.setDate(startDate.getDate() - 7);
+                    break;
+                case 'this_month':
+                    endDate = maxDate;
+                    startDate = new Date(maxDate);
+                    startDate.setDate(1);
+                    break;
+                case 'custom':
+                    startDate = new Date(customStart);
+                    endDate = new Date(customEnd);
+                    break;
+                default:
+                    startDate = new Date(dateRange.min);
+                    endDate = new Date(dateRange.max);
+            }
+
+            const formatDate = (d) => d.toISOString().split('T')[0];
+            return { start: formatDate(startDate), end: formatDate(endDate) };
+        }
+
+        // Event listeners
+        document.getElementById('date-range').addEventListener('change', function(e) {
+            const isCustom = e.target.value === 'custom';
+            document.getElementById('custom-start-group').style.display = isCustom ? 'flex' : 'none';
+            document.getElementById('custom-end-group').style.display = isCustom ? 'flex' : 'none';
+            document.getElementById('custom-apply-group').style.display = isCustom ? 'flex' : 'none';
+
+            if (!isCustom) {
+                const range = getDateRangeFromSelection(e.target.value);
+                const data = processData(allData, range.start, range.end, currentThreshold);
+                updateChart(data);
+            }
+        });
+
+        document.getElementById('delay-threshold').addEventListener('change', function(e) {
+            currentThreshold = parseInt(e.target.value);
+            const selectedRange = document.getElementById('date-range').value;
+            const customStart = document.getElementById('custom-start').value;
+            const customEnd = document.getElementById('custom-end').value;
+            const range = getDateRangeFromSelection(selectedRange, customStart, customEnd);
+            const data = processData(allData, range.start, range.end, currentThreshold);
+            updateChart(data);
+        });
+
+        document.getElementById('apply-custom').addEventListener('click', function() {
+            const customStart = document.getElementById('custom-start').value;
+            const customEnd = document.getElementById('custom-end').value;
+            if (customStart && customEnd) {
+                const range = getDateRangeFromSelection('custom', customStart, customEnd);
+                const data = processData(allData, range.start, range.end, currentThreshold);
+                updateChart(data);
+            }
+        });
+
+        // Initialize
+        const dateRange = getDateRange();
+        document.getElementById('custom-start').value = dateRange.min;
+        document.getElementById('custom-start').min = dateRange.min;
+        document.getElementById('custom-start').max = dateRange.max;
+        document.getElementById('custom-end').value = dateRange.max;
+        document.getElementById('custom-end').min = dateRange.min;
+        document.getElementById('custom-end').max = dateRange.max;
+
+        const initialData = processData(allData, dateRange.min, dateRange.max, currentThreshold);
+        updateChart(initialData);
     </script>
 </body>
 </html>
