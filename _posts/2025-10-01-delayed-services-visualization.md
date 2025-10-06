@@ -13,11 +13,14 @@ To obtain the data, we need to build a query that takes all active passenger ser
 
 ## Interactive Visualization
 
+From the above data, we've crafted two different visualisations. The first is a stacked area chart, displaying the percentage of services that fall into each delay bucket. You can filter this visualisation by TOC.
+
+The second visualisation uses a bubble chart to display the differences between the TOCs. It can be filtered by date, as well as delay threshold.
+
 Use the dropdown below to filter by Train Operating Company (TOC) or view aggregated data across all operators.
 
 <iframe src="/assets/visualizations/delayed-services-stacked-area.html" width="100%" height="750" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;"></iframe>
 
-## TOC Performance Analysis
 
 Explore the relationship between average delays, consistency, and the percentage of delayed services across all operators. Bubble size represents the proportion of services delayed beyond your selected threshold.
 
