@@ -24,15 +24,19 @@ The second visualisation uses a bubble chart to compare performance across diffe
 <iframe src="/assets/visualizations/delayed-services-bubble.html" width="100%" height="1200" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;"></iframe>
 
 ## Key Findings
-
 From these visualisations, several patterns emerge:
 
 **Temporal Patterns:**
-- Rail performance is generally consistent day-to-day, though there are notable drops on Sundays - likely owing to the fact most rail staff are not contracted to work on Sundays.
+
+- Rail performance is generally consistent day-to-day, though there are notable drops on Sundays — likely owing to the fact most rail staff are not contracted to work on Sundays.
+- In most cases, the more consistent an operator is (lower standard deviation), the less delays they have. The only outlier to this is the Caledonian Sleeper — although this is likely due to the small amount of services they run.
 
 **Operator Performance:**
+
 - Certain train operators (Avanti, CrossCountry) have notably poorer performance than other operators, with higher average delays and greater inconsistency.
 - The best performers (Merseyrail, Heathrow Express, Island Line) maintain both low average delays and high consistency.
+- The Eurostar has terrible punctuality!
 
 **Overall Picture:**
-- Despite negative perceptions, most trains run on time! The majority of services arrive within 5 minutes of their scheduled time.
+
+While this might not give you much comfort when standing on a cold train platform, it seems most trains run on time! The best performers see 95% or more of their services running within 5 minutes of schedule. I just hope you aren’t waiting for an Avanti or Eurostar service, as you might be waiting a while…
