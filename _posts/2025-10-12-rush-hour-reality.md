@@ -138,13 +138,13 @@ You can play with this data further in the visualisations below
 
 Explore the distribution of train loading across all services, showing how often trains fall into different capacity ranges:
 
-<iframe src="/assets/visualizations/rush-hour-loading-distribution.html" width="100%" height="750" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;"></iframe>
+<iframe src="/assets/visualizations/rush-hour-loading-distribution.html" width="100%" height="950" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;"></iframe>
 
 ### Hourly Loading Pattern
 
 See how train loading varies throughout the day, with clear peaks during morning and evening rush hours:
 
-<iframe src="/assets/visualizations/rush-hour-loading-hourly.html" width="100%" height="750" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;"></iframe>
+<iframe src="/assets/visualizations/rush-hour-loading-hourly.html" width="100%" height="950" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;"></iframe>
 
 ---
 
