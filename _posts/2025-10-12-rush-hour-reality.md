@@ -146,6 +146,12 @@ See how train loading varies throughout the day, with clear peaks during morning
 
 <iframe src="/assets/visualizations/rush-hour-loading-hourly.html" width="100%" height="950" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;"></iframe>
 
+### Train Length vs Loading
+
+Explore the relationship between train length and loading levels, showing how different train configurations affect capacity during peak times:
+
+<iframe src="/assets/visualizations/train-length-vs-loading.html" width="100%" height="950" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;"></iframe>
+
 ---
 
 ### Reference
