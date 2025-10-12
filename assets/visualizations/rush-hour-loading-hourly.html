@@ -368,6 +368,43 @@
             });
         }
 
+        function updateStats(view) {
+            let morningPeak, eveningPeak, middayAvg;
+
+            if (view === 'weekday') {
+                // Weekday: avg of hours 7-8
+                morningPeak = ((weekdayData.find(d => d.hour === 7)?.loading || 0) +
+                              (weekdayData.find(d => d.hour === 8)?.loading || 0)) / 2;
+                // Evening: avg of hours 16-17 (4-5pm)
+                eveningPeak = ((weekdayData.find(d => d.hour === 16)?.loading || 0) +
+                              (weekdayData.find(d => d.hour === 17)?.loading || 0)) / 2;
+                // Midday: avg of hours 10-14
+                const middayHours = weekdayData.filter(d => d.hour >= 10 && d.hour <= 14);
+                middayAvg = middayHours.reduce((sum, d) => sum + d.loading, 0) / middayHours.length;
+            } else if (view === 'toc') {
+                // SE: avg of hours 7-8
+                morningPeak = ((seData.find(d => d.hour === 7)?.loading || 0) +
+                              (seData.find(d => d.hour === 8)?.loading || 0)) / 2;
+                // SE Evening: peak at hour 17 (5pm)
+                eveningPeak = seData.find(d => d.hour === 17)?.loading || 0;
+                // SE Midday: avg of hours 10-14
+                const middayHours = seData.filter(d => d.hour >= 10 && d.hour <= 14);
+                middayAvg = middayHours.reduce((sum, d) => sum + d.loading, 0) / middayHours.length;
+            } else {
+                // All: same as weekday
+                morningPeak = ((weekdayData.find(d => d.hour === 7)?.loading || 0) +
+                              (weekdayData.find(d => d.hour === 8)?.loading || 0)) / 2;
+                eveningPeak = ((weekdayData.find(d => d.hour === 16)?.loading || 0) +
+                              (weekdayData.find(d => d.hour === 17)?.loading || 0)) / 2;
+                const middayHours = weekdayData.filter(d => d.hour >= 10 && d.hour <= 14);
+                middayAvg = middayHours.reduce((sum, d) => sum + d.loading, 0) / middayHours.length;
+            }
+
+            document.getElementById('morning-peak').textContent = morningPeak.toFixed(0) + '%';
+            document.getElementById('evening-peak').textContent = eveningPeak.toFixed(0) + '%';
+            document.getElementById('midday-avg').textContent = middayAvg.toFixed(0) + '%';
+        }
+
         function updateChart() {
             const view = viewSelect.value;
             let datasets = [];
@@ -401,14 +438,18 @@
                 datasets = [
                     {
                         label: 'Southeastern',
-                        data: seData.map(d => d.loading),
+                        data: Array(24).fill(null).map((_, i) => {
+                            const match = seData.find(d => d.hour === i);
+                            return match ? match.loading : null;
+                        }),
                         borderColor: '#e67e22',
                         backgroundColor: 'rgba(230, 126, 34, 0.1)',
                         borderWidth: 3,
                         fill: true,
                         tension: 0.4,
                         pointRadius: 0,
-                        pointHoverRadius: 6
+                        pointHoverRadius: 6,
+                        spanGaps: true
                     },
                     {
                         label: 'Chiltern',
@@ -442,6 +483,7 @@
                 ];
             }
 
+            updateStats(view);
             createChart(datasets);
         }
 
