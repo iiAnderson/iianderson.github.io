@@ -13,8 +13,9 @@ This feed contains live information about train movements, scheduling, and servi
 In previous posts, we have discussed how services can be grouped into routes, analysed stations for the most and least delayed, and developed interactive visualisations to show delays across the network.  
 Today we’re going to focus on **peak trains**, their **capacity**, and their **average loading** — a metric to quantify how full a given service is.  
 
-Loading is a relatively new metric to the Darwin system, being first introduced in 2017 ([1] yes, the railways move slowly...) and has been slowly adopted by operators.  
-Over the course of the last six months, we’ve only been able to capture reliable data for both **Chiltern** and **Southeastern**.
+Loading is a relatively new metric to the Darwin system, being first introduced in 2017 ([1] yes, the railways move slowly...). Over the course of the last six months, we’ve only been able to capture reliable data for both **Chiltern** and **Southeastern**.
+
+Given data for only these two operators, let's dive in.
 
 ---
 
