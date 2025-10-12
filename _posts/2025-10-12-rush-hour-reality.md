@@ -5,8 +5,6 @@ categories: [Railways, Analysis]
 tags: [railway, analysis, visualization, darwin]
 ---
 
-# Part 4: Interactive Delays
-
 # Part 5: Rush Hour Reality
 
 Over the last year, I have been designing a system for ingesting data from **National Rail’s “Darwin Push Port Feed”**.  
