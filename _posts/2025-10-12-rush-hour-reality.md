@@ -121,14 +121,12 @@ During peak times, we get the following table:
 
 ---
 
-14 of the services running during peak times for **Southeastern** are **5-car trains** — with an average loading between **65% and 98%**,  
-accounting for nearly **20% of the overcrowding at peak**.  
+14 of the services running during peak times for **Southeastern** are **5-car trains** — with an average loading between **65% and 98%**, accounting for nearly **20% of the overcrowding at peak**.  
 A rebalancing of trains during peak times could drastically cut this congestion.  
 
 The same could also be said for the **10-car services**, which are equally stretched during peak times.  
 
-Looking closer at the data for **Chiltern**, we can see a different picture, with the **longest trains having the largest loading factor**.  
-These services are only **4 cars long**, something which if increased could have a drastic improvement to passenger comfort at peak.
+Looking closer at the data for **Chiltern**, we can see a different picture, with the **longest trains having the largest loading factor**. These services are only **4 cars long**, something which if increased could have a drastic improvement to passenger comfort at peak.
 
 You can play with this data further in the visualisations below
 
