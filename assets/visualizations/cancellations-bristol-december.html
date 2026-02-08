@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cancellation Timing by Category</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h2 {
+            color: #2c3e50;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .subtitle {
+            color: #7f8c8d;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+        .chart-container {
+            position: relative;
+            height: 500px;
+            margin-bottom: 20px;
+        }
+        .stats {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .stats h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+        .category-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .category-row:last-child {
+            border-bottom: none;
+        }
+        .category-label {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .category-total {
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Cancellation Timing Patterns by Category</h2>
+        <div class="subtitle">Bristol - December 2025</div>
+        
+        <div class="chart-container">
+            <canvas id="timingChart"></canvas>
+        </div>
+        
+        <div class="stats">
+            <h3>Summary</h3>
+            <div class="category-row">
+                <span class="category-label" style="color: #e74c3c;">■ Crew shortage</span>
+                <span class="category-total">212 cancellations (41.6%)</span>
+            </div>
+            <div class="category-row">
+                <span class="category-label" style="color: #3498db;">■ Train faults/repairs</span>
+                <span class="category-total">106 cancellations (20.8%)</span>
+            </div>
+            <div class="category-row">
+                <span class="category-label" style="color: #9b59b6;">■ Infrastructure (signalling, points)</span>
+                <span class="category-total">28 cancellations (5.5%)</span>
+            </div>
+            <div class="category-row">
+                <span class="category-label" style="color: #1abc9c;">■ Weather events (flooding)</span>
+                <span class="category-total">20 cancellations (3.9%)</span>
+            </div>
+            <div class="category-row">
+                <span class="category-label" style="color: #e67e22;">■ Previous delays</span>
+                <span class="category-total">7 cancellations (1.4%)</span>
+            </div>
+            <div class="category-row">
+                <span class="category-label" style="color: #f39c12;">■ Emergency services</span>
+                <span class="category-total">9 cancellations (1.8%)</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('timingChart').getContext('2d');
+        
+        const data = {
+            labels: [
+                '4+ hours\nbefore',
+                '2-4 hours\nbefore',
+                '1-2 hours\nbefore',
+                '<1 hour\nbefore',
+                'Partially\ncancelled'
+            ],
+            datasets: [
+                {
+                    label: 'Crew shortage',
+                    data: [94, 28, 15, 22, 53],
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#e74c3c',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    tension: 0.3
+                },
+                {
+                    label: 'Train faults/repairs',
+                    data: [7, 17, 20, 49, 13],
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#3498db',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    tension: 0.3
+                },
+                {
+                    label: 'Infrastructure (signalling, points)',
+                    data: [0, 0, 3, 8, 17],
+                    borderColor: '#9b59b6',
+                    backgroundColor: 'rgba(155, 89, 182, 0.1)',
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#9b59b6',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    tension: 0.3
+                },
+                {
+                    label: 'Weather events (flooding)',
+                    data: [17, 2, 0, 0, 1],
+                    borderColor: '#1abc9c',
+                    backgroundColor: 'rgba(26, 188, 156, 0.1)',
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#1abc9c',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    tension: 0.3
+                },
+                {
+                    label: 'Previous delays',
+                    data: [0, 0, 2, 3, 2],
+                    borderColor: '#e67e22',
+                    backgroundColor: 'rgba(230, 126, 34, 0.1)',
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#e67e22',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    tension: 0.3
+                },
+                {
+                    label: 'Emergency services',
+                    data: [0, 0, 0, 2, 7],
+                    borderColor: '#f39c12',
+                    backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#f39c12',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    tension: 0.3
+                }
+            ]
+        };
+
+        const config = {
+            type: 'line',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            font: {
+                                size: 12
+                            },
+                            padding: 12,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleFont: {
+                            size: 14
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed.y;
+                                const dataset = context.dataset.label;
+                                const totals = {
+                                    'Crew shortage': 212,
+                                    'Train faults/repairs': 106,
+                                    'Infrastructure (signalling, points)': 28,
+                                    'Weather events (flooding)': 20,
+                                    'Previous delays': 7,
+                                    'Emergency services': 9
+                                };
+                                const total = totals[dataset];
+                                const percentage = ((value / total) * 100).toFixed(1);
+                                return `${dataset}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 10,
+                            font: {
+                                size: 12
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Number of Cancellations',
+                            font: {
+                                size: 13,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            font: {
+                                size: 11
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Timing Category',
+                            font: {
+                                size: 13,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        };
+
+        const chart = new Chart(ctx, config);
+    </script>
+</body>
+</html>
