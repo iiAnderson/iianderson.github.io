@@ -5,9 +5,9 @@ categories: [Railways, Analysis]
 tags: [railway, analysis, visualization, darwin, bristol]
 ---
 
-# Half of Bristol train cancellations are due to one reason
+# Analysing cancellations from Bristol Temple Meads
 
-We've all experienced train cancellations - leaves on the line, signalling faults, the list is seemingly endless. Turns out it's not though, National Rail actually has 506 different cancellation codes which cover every eventuality. But when I analyzed December's data from Bristol Temple Meads, one pattern dominated: nearly half of all cancellations came down to staffing shortages.
+We've all experienced train cancellations - leaves on the line, signalling faults, the list is seemingly endless. Turns out it's not though, National Rail actually has 506 different cancellation codes which cover every eventuality. But when I analyzed December's data from Bristol Temple Meads, one pattern dominated: nearly half of all cancellations came down to *staffing shortages*.
 
 Analysing the raw National Rail data, we can see the top 10 delay categories were:
 
@@ -33,7 +33,7 @@ Some of these categories are quite similar, if we group similar reasons together
 - Related to previous delays: 7
 - Related to emergency services: 9
 
-This is a striking finding: 46% of cancellations were due to staffing decisions by train operating companies, not infrastructure failures or weather events. Imagine what an effect this could have on our railways - and this doesn't even include delays caused by shortage of crew!
+This is a striking finding: *46%* of cancellations were due to staffing decisions by train operating companies, not infrastructure failures or weather events. Imagine what an effect this could have on our railways - and this doesn't even include delays caused by shortage of crew!
 
 Through this analysis, we've also captured when these services were cancelled, as shown below.
 
