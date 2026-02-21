@@ -7,11 +7,13 @@ tags: [railway, analysis, visualization, darwin, cancellations, uk]
 
 # Train cancellations 2026
 
+In 2026, some UK stations saw more than 1 in 3 trains cancelled. Let's find out which.
+
 Over the past year, I have been collecting train service data from National Rail - storing each train's movements, delays and cancellations. I am now working on developing new analysis and visualisations to show this data, along with holding the bodies that run our railways accountable. In today's article, let's explore cancellations across the network in 2026 - where are they happening and why.
 
 ## The dataset
 
-Before we get into the results , I'd like to touch on the dataset itself. The raw data from National Rail is huge - every time a train reaches a station, a new message is generated, along with updates on estimated times for later stops. For 2026 alone, that's over **500 million rows**. Analysing data at this scale can get expensive fast (you may have noticed that all my previous analysis focuses on a single location - that's not a coincidence!).
+Before we get into the results , I'd like to touch on the dataset itself. The Darwin real-time feed generates a message every time a train reaches a station, along with updates on estimated times for later stops. This means a single train can publish hundreds of messages. For 2026 alone, that's over **500 million rows**. Analysing data at this scale can get expensive fast (you may have noticed that all my previous analysis focuses on a single location - that's not a coincidence!).
 
 To bring the cost down, I used a common data engineering technique: **normalisation**. Taking our complex, often messy, rows of train locations and marshalling them into a single, standardised format for each service that we can quickly operate over. Doing this, I reduced down our dataset to ~1.5 million rows - much more manageable!
 
@@ -19,7 +21,7 @@ To bring the cost down, I used a common data engineering technique: **normalisat
 
 Let's build a query! There are a few things we need to consider:
 
-- Train locations are identified by **TIPLOC codes** but large stations can have several of these. By looking up the **CRS Code** from the TIPLOC we can aggregate these results into a single statino.
+- Train locations are identified by **TIPLOC codes** but large stations can have several of these. By looking up the **CRS Code** from the TIPLOC we can aggregate these results into a single station.
 - We want to count **distinct services cancelled**. If a service visits the same station twice (for example, it's a loop), we only want this counted once.
 - We're only interested in **passenger stops** — not stations a train passes through without stopping.
 - We want to filter out **non-passenger services**, such as empty stock movements.
@@ -28,7 +30,8 @@ With that, we have our query! You can see it in the appendix below. Now, onto th
 
 ## Results
 
-Here are the top thirty results, ordered by cancellation rate - the percentage of scheduled services that were cancelled.
+Here are the top thirty results, ordered by cancellation rate - the percentage of scheduled services that were cancelled. This analysis covers services from 1 January 2026 to 21 February 2026 (year-to-date).
+
 
 | # | Station | Total Services | Cancelled | Full | Partial | Rate |
 |---|---------|---------------|-----------|------|---------|------|
@@ -63,7 +66,7 @@ Here are the top thirty results, ordered by cancellation rate - the percentage o
 | 29 | Forsinard | 310 | 38 | 21 | 17 | 12.3% |
 | 30 | Wick | 310 | 37 | 21 | 16 | 11.9% |
 
-Note: Partially cancelled services are classed by a train stopping at the marked station, but not completing it's entire route. 
+Note: A partially cancelled service is one that stopped at the station but did not complete its full scheduled route — for example, terminating early.
 
 Unless you're a real rail nut (or a local) I'd guess you've not heard of quite a few of these stations. That's because they cluster around five lines:
 - **Tarka line** (Cornwall, Exeter to Barnstaple)
@@ -74,7 +77,7 @@ Unless you're a real rail nut (or a local) I'd guess you've not heard of quite a
 
 The Cornish lines are perhaps the least surprising entry here. The monumental rainfall in January and February closed both the Looe Valley and Atlantic Coast lines to all traffic for significant stretches of time. This also applies to the Mole Valley line, which suffered a landslip at the end of January. 
 
-The Far North line tells a different story: as far as I can tell it hasn't faced the same weather-related closures, but given how remote it is (Altnabreac, for instance, is arguably the most isolated station in Britain), it's not a huge shock to see it featurin
+The Far North line tells a different story: as far as I can tell it hasn't faced the same weather-related closures, but given how remote it is (Altnabreac, for instance, is arguably the most isolated station in Britain), its not a huge shock to see it featured.
 
 We can see these stations visualised below:
 
@@ -86,9 +89,11 @@ Now we can run more efficient queries, why limit ourselves to 30 stations! Let's
 
 <iframe src="/assets/visualizations/all-cancellations-uk-2026.html" width="100%" height="950" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;"></iframe>
 
-From this, we can see our top 5 delayed routes clearly - orange in a sea of green! We can also see other lines which struggle with cancellations, such as the stunning Heart of Wales line. You'll also notice that switching to "Number Cancelled" shows a very different picture, with most lines having some level of cancelled services - with only the lines north of Ipswich excelling in minimising the services cancelled.
+From this, we can see our top 5 cancelled lines clearly - orange in a sea of green! We can also see other lines which struggle with cancellations, such as the stunning Heart of Wales line. Switching from percentage cancelled to absolute number cancelled reveals a very different story. High-frequency urban corridors, while operationally more resilient, generate far larger absolute cancellation numbers simply because they run far more trains. Only the lines north of Ipswich excelling in minimising the services cancelled.
 
-In future articles, I will look further back in cancellations, and see what patterns we can uncover.
+Cancellation percentages alone don’t tell the whole story. Rural lines dominate the league table, but major commuter corridors account for far more cancelled journeys in absolute terms.
+
+In future articles, I’ll explore multi-year trends to see whether 2026 is an anomaly or part of a deeper structural issue in Britain’s rail network.
 
 
 ## Appendix
