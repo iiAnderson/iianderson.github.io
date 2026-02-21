@@ -78,7 +78,7 @@ The Far North line tells a different story: as far as I can tell it hasn't faced
 
 We can see these stations visualised below:
 
-<iframe src="/assets/visualizations/top-cancellations-uk-2026.html" width="100%" height="650" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;"></iframe>
+<iframe src="/assets/visualizations/top-cancellations-uk-2026.html" width="100%" height="1000" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;"></iframe>
 
 ## Results: A bigger picture
 
