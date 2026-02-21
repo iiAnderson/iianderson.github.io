@@ -9,7 +9,7 @@ tags: [railway, analysis, visualization, darwin, cancellations, uk]
 
 In 2026, some UK stations saw more than 1 in 3 trains cancelled. Let's find out which.
 
-Over the past year, I have been collecting train service data from National Rail - storing each train's movements, delays and cancellations. I am now working on developing new analysis and visualisations to show this data, along with holding the bodies that run our railways accountable. In today's article, let's explore cancellations across the network in 2026 - where are they happening and why.
+Over the past year, I have been collecting train service data from National Rail - tracking each train's movements, delays and cancellations. I am now developing new visualisations to shed light on the network's performance. In today's article, let's explore cancellations across the network in 2026.
 
 ## The dataset
 
