@@ -37,9 +37,17 @@
     /* ── Three-panel grid ───────────────────────────────────── */
     .panels {
       display: grid;
-      grid-template-columns: 5fr 2fr 3fr;
+      grid-template-columns: 2fr 3fr;
       gap: 8px;
       padding: 8px;
+    }
+
+    .panel-full {
+      grid-column: 1 / -1;
+    }
+
+    .panel-full .map {
+      height: 380px;
     }
 
     .panel {
@@ -223,6 +231,8 @@
     /* ── Responsive ─────────────────────────────────────────── */
     @media (max-width: 700px) {
       .panels { grid-template-columns: 1fr; }
+      .panel-full { grid-column: 1; }
+      .panel-full .map { height: 300px; }
       .map { height: 300px; }
       .data-note { margin-left: 0; width: 100%; }
     }
@@ -236,7 +246,7 @@
 </header>
 
 <div class="panels">
-  <div class="panel">
+  <div class="panel panel-full">
     <div class="panel-header">
       <h2>Devon &amp; Cornwall</h2>
       <p>Tarka Line &middot; Atlantic Coast &middot; Looe Valley</p>
