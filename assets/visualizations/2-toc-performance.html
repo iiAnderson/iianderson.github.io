@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOC Performance Comparison - Bristol Temple Meads</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .chart-container {
+            position: relative;
+            height: 500px;
+            margin-bottom: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚂 Train Operating Company Performance</h1>
+        <p class="subtitle">Comparison of delay performance by TOC (GW = Great Western, XC = CrossCountry)</p>
+
+        <div class="chart-container">
+            <canvas id="tocAvgDelayChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="tocPunctualityChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="tocServiceVolumeChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const csvData = `"year","month","day","toc","route_code","num_services","min_delay_minutes","max_delay_minutes","avg_delay_minutes","stddev_delay_minutes","early_services","on_time_0_5min","delayed_5_15min","delayed_15_30min","delayed_30plus_min","origins","destinations"
+"2025","10","01","GW","1A","35","-0.5","8.75","1.68","2.18","5","26","4","0","0","[BRSTLTM, TAUNTON, PENZNCE, WSMARE, EXETRSD, TOTNES]","[PADTON, PLYMTH, RDNGSTN]"
+"2025","10","01","GW","1C","35","-1.17","9.56","1.65","2.91","12","19","4","0","0","[RDNGSTN, PADTON]","[SWANSEA, PENZNCE, BATHSPA, TAUNTON, BRSTLTM, WSMARE]"
+"2025","10","01","GW","1F","36","-0.79","10.56","1.76","2.57","8","23","5","0","0","[FRATTON, WSTBRYW, PHBR, FROME, CRDFCEN, BRSTLTM]","[FAREHAM, CRDFCEN, PHBR]"
+"2025","10","01","GW","1G","1","0.42","0.42","0.42",,"0","1","0","0","0","[PLYMTH]","[BRSTPWY]"
+"2025","10","01","GW","1H","2","-0.9","-0.8","-0.85","0.07","2","0","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","01","GW","1J","1","18.95","18.95","18.95",,"0","0","0","1","0","[CRDFCEN]","[FROME]"
+"2025","10","01","GW","1K","1","1.54","1.54","1.54",,"0","1","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","01","GW","2C","38","-2.23","5.85","0.36","1.91","22","13","3","0","0","[SEVTNLJ, BATHSPA, BRSTLTM, TAUNTON, BRSTPWY, CRDFCEN, YATTON]","[NWPTRTG, BRSTLTM, PENZNCE, OLDFLDP, FROME, PLYMTH, WSTBRYW, BRDGWTR, EXETRSD, NAILSEA, TAUNTON]"
+"2025","10","01","GW","2D","2","-0.38","-0.13","-0.25","0.18","2","0","0","0","0","[BRSTLTM]","[BRSTPWY]"
+"2025","10","01","GW","2E","21","-1.9","7.7","0.45","2.44","15","4","2","0","0","[BRSTLTM, WRMNSTR, WSTBRYW]","[CHLTNHM, WORCSSH, GTMLVRN, WORCSFS, BRSTLTM]"
+"2025","10","01","GW","2F","5","0.0","22.43","4.63","9.95","0","4","0","1","0","[BRSTLTM]","[WRMNSTR, EXMOUTH]"
+"2025","10","01","GW","2H","26","-1.0","4.75","0.02","1.29","16","10","0","0","0","[FILTNEW, BRSTLTM]","[BRSTLTM, FILTNEW]"
+"2025","10","01","GW","2K","55","-0.87","12.75","1.9","2.95","8","43","4","0","0","[SVRNBCH, CLFDOWN, AVONMTH, BRSTLTM, WSMARE, TAUNTON]","[BRSTLTM, AVONMTH, SVRNBCH, CLFDOWN]"
+"2025","10","01","GW","2M","7","-0.75","0.93","-0.36","0.58","6","1","0","0","0","[BATHSPA, EXETRSD, WSMARE, TAUNTON, PAIGNTN]","[BRDFDOA, YATTON, BRSTLTM]"
+"2025","10","01","GW","2O","13","-0.48","9.52","1.84","3.24","3","8","2","0","0","[BRSTLTM, SVRNBCH]","[WEYMTH, SLSBRY]"
+"2025","10","01","GW","2T","24","-1.4","5.14","-0.11","1.31","17","6","1","0","0","[WSTBRYW, WORCSFS, CHLTNHM, FROME, WRMNSTR, WORCSSH, GTMLVRN]","[BRSTLTM]"
+"2025","10","01","GW","2U","17","-0.62","2.76","0.48","1.06","7","10","0","0","0","[PAIGNTN, TAUNTON, EXMOUTH, BRSTLTM, EXETRSD]","[CRDFCEN]"
+"2025","10","01","GW","2V","20","-0.6","13.91","1.3","3.49","9","9","2","0","0","[YOVILPM, SLSBRY, FRATTON, WEYMTH, SOTON]","[FILTNEW, BRSTLTM]"
+"2025","10","01","GW","2Y","14","-0.42","1.81","0.49","0.65","4","10","0","0","0","[BRSTLTM, AVONMTH, SVRNBCH]","[WSMARE]"
+"2025","10","01","XC","1B","1","-0.17","-0.17","-0.17",,"1","0","0","0","0","[PAIGNTN]","[BRSTLTM]"
+"2025","10","01","XC","1C","1","-0.03","-0.03","-0.03",,"1","0","0","0","0","[BRSTLTM]","[PENZNCE]"
+"2025","10","01","XC","1E","3","-0.06","1.82","1.0","0.96","1","2","0","0","0","[PLYMTH]","[NWCSTLE, LEEDS]"
+"2025","10","01","XC","1M","16","-0.67","21.89","3.37","6.27","2","10","3","1","0","[PLYMTH, PENZNCE, BRSTLTM, PAIGNTN]","[BHAMNWS, MNCRPIC]"
+"2025","10","01","XC","1S","11","-0.07","9.21","2.46","2.78","1","8","2","0","0","[PENZNCE, PLYMTH, BRSTLTM]","[EDINBUR, DUNDETB, GLGC]"
+"2025","10","01","XC","1V","28","-0.36","24.77","3.25","6.03","6","18","2","2","0","[YORK, LEEDS, DRBY, GLGC, NWCSTLE, EDINBUR, ABRDEEN, BHAMNWS, MNCRPIC]","[PLYMTH, PENZNCE, BRSTLTM, PAIGNTN]"
+"2025","10","02","GW","1A","33","-0.42","14.93","1.76","3.03","5","25","3","0","0","[PENZNCE, EXETRSD, BRSTLTM, WSMARE, TAUNTON, TOTNES]","[PADTON, RDNGSTN, PLYMTH]"
+"2025","10","02","GW","1C","36","-0.92","15.58","2.16","3.94","8","24","3","1","0","[RDNGSTN, PADTON]","[SWANSEA, TAUNTON, PENZNCE, BATHSPA, BRSTLTM, WSMARE]"
+"2025","10","02","GW","1F","35","-0.44","35.72","2.63","6.46","7","24","3","0","1","[FRATTON, CRDFCEN, BRSTLTM, PHBR, WSTBRYW, FROME]","[FAREHAM, PHBR, CRDFCEN]"
+"2025","10","02","GW","1G","1","0.88","0.88","0.88",,"0","1","0","0","0","[PLYMTH]","[BRSTPWY]"
+"2025","10","02","GW","1H","1","-0.8","-0.8","-0.8",,"1","0","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","02","GW","1J","1","1.5","1.5","1.5",,"0","1","0","0","0","[CRDFCEN]","[FROME]"
+"2025","10","02","GW","1K","1","4.54","4.54","4.54",,"0","1","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","02","GW","2C","37","-2.0","12.0","0.67","2.39","18","18","1","0","0","[YATTON, CRDFCEN, BRSTPWY, BRSTLTM, TAUNTON, BATHSPA, SEVTNLJ]","[NAILSEA, PLYMTH, BRSTLTM, PENZNCE, EXETRSD, WSTBRYW, FROME, BRDGWTR, TAUNTON, OLDFLDP, NWPTRTG]"
+"2025","10","02","GW","2D","2","0.0","0.75","0.38","0.53","0","2","0","0","0","[BRSTLTM]","[BRSTPWY]"
+"2025","10","02","GW","2E","21","-1.0","11.94","0.72","2.71","10","10","1","0","0","[WRMNSTR, WSTBRYW, BRSTLTM]","[GTMLVRN, WORCSFS, WORCSSH, BRSTLTM, CHLTNHM]"
+"2025","10","02","GW","2F","5","0.1","7.85","2.84","3.14","0","4","1","0","0","[BRSTLTM]","[WRMNSTR, EXMOUTH]"
+"2025","10","02","GW","2H","26","-1.38","1.13","-0.32","0.61","21","5","0","0","0","[FILTNEW, BRSTLTM]","[BRSTLTM, FILTNEW]"
+"2025","10","02","GW","2K","56","-0.8","6.97","0.77","1.57","22","33","1","0","0","[TAUNTON, BRSTLTM, CLFDOWN, AVONMTH, SVRNBCH, WSMARE]","[SVRNBCH, BRSTLTM, AVONMTH, CLFDOWN]"
+"2025","10","02","GW","2M","7","-1.3","1.36","-0.22","0.89","5","2","0","0","0","[WSMARE, TAUNTON, PAIGNTN, EXETRSD, BATHSPA]","[BRSTLTM, YATTON, BRDFDOA]"
+"2025","10","02","GW","2O","13","-0.46","3.36","0.94","1.33","4","9","0","0","0","[SVRNBCH, BRSTLTM]","[SLSBRY, WEYMTH]"
+"2025","10","02","GW","2T","25","-1.3","3.6","0.14","1.28","17","8","0","0","0","[GTMLVRN, WRMNSTR, WORCSFS, BATHSPA, CHLTNHM, WSTBRYW, WORCSSH, FROME]","[BRSTLTM]"
+"2025","10","02","GW","2U","18","-0.44","14.59","2.49","4.24","4","10","4","0","0","[EXETRSD, PAIGNTN, TAUNTON, EXMOUTH, BRSTLTM]","[CRDFCEN]"
+"2025","10","02","GW","2V","19","-0.73","3.75","0.41","1.28","14","5","0","0","0","[YOVILPM, WEYMTH, SOTON, FRATTON, SLSBRY]","[FILTNEW, BRSTLTM]"
+"2025","10","02","GW","2Y","14","-0.47","3.34","0.64","1.17","6","8","0","0","0","[SVRNBCH, AVONMTH, BRSTLTM]","[WSMARE]"
+"2025","10","02","XC","1B","1","-0.83","-0.83","-0.83",,"1","0","0","0","0","[PAIGNTN]","[BRSTLTM]"
+"2025","10","02","XC","1C","1","0.32","0.32","0.32",,"0","1","0","0","0","[BRSTLTM]","[PENZNCE]"
+"2025","10","02","XC","1E","3","0.43","1.81","1.21","0.71","0","3","0","0","0","[PLYMTH]","[LEEDS, NWCSTLE]"
+"2025","10","02","XC","1M","16","-0.06","14.72","2.61","3.82","1","13","2","0","0","[PENZNCE, PLYMTH, PAIGNTN, BRSTLTM]","[BHAMNWS, MNCRPIC]"
+"2025","10","02","XC","1S","11","-0.17","12.2","2.05","3.43","1","9","1","0","0","[PENZNCE, PLYMTH, BRSTLTM]","[GLGC, DUNDETB, EDINBUR]"
+"2025","10","02","XC","1V","29","-0.67","13.44","2.2","2.82","2","24","3","0","0","[MNCRPIC, BHAMNWS, NWCSTLE, GLGC, DRBY, LEEDS, EDINBUR, YORK, ABRDEEN]","[BRSTLTM, PAIGNTN, PENZNCE, PLYMTH]"
+"2025","10","03","GW","1A","34","-0.5","8.92","2.5","2.34","4","26","4","0","0","[TOTNES, TAUNTON, EXETRSD, BRSTLTM, WSMARE, PENZNCE]","[PLYMTH, PADTON, RDNGSTN]"
+"2025","10","03","GW","1C","35","-1.08","29.58","3.28","5.62","8","17","9","1","0","[PADTON, RDNGSTN]","[SWANSEA, BRSTLTM, PENZNCE, BATHSPA, TAUNTON, WSMARE]"
+"2025","10","03","GW","1F","37","-0.41","38.17","4.78","8.41","6","24","4","1","2","[FRATTON, BRSTLTM, CRDFCEN, FAREHAM, WSTBRYW, PHBR, FROME]","[FAREHAM, PHBR, SOTON, CRDFCEN]"
+"2025","10","03","GW","1G","1","4.17","4.17","4.17",,"0","1","0","0","0","[PLYMTH]","[BRSTPWY]"
+"2025","10","03","GW","1H","1","-1.2","-1.2","-1.2",,"1","0","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","03","GW","1J","1","-0.45","-0.45","-0.45",,"1","0","0","0","0","[CRDFCEN]","[FROME]"
+"2025","10","03","GW","1K","1","-0.27","-0.27","-0.27",,"1","0","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","03","GW","1Z","2","-0.71","4.75","2.02","3.86","1","1","0","0","0","[BRSTLTM]","[CRDFCEN]"
+"2025","10","03","GW","2C","35","-1.46","20.72","1.84","3.92","9","22","3","1","0","[BRSTLTM, BRSTPWY, CRDFCEN, YATTON, TAUNTON]","[EXETRSD, FROME, TAUNTON, WSTBRYW, PENZNCE, NAILSEA, BRSTLTM, PLYMTH, BRDGWTR]"
+"2025","10","03","GW","2D","2","-0.25","2.63","1.19","2.03","1","1","0","0","0","[BRSTLTM]","[BRSTPWY]"
+"2025","10","03","GW","2E","21","-0.8","12.88","2.4","4.02","9","8","4","0","0","[WSTBRYW, WRMNSTR, BRSTLTM]","[WORCSFS, CHLTNHM, BRSTLTM, GTMLVRN, WORCSSH]"
+"2025","10","03","GW","2F","5","0.58","1.8","1.21","0.53","0","5","0","0","0","[BRSTLTM]","[EXMOUTH, WRMNSTR]"
+"2025","10","03","GW","2H","26","-1.0","12.88","0.4","3.01","20","4","2","0","0","[FILTNEW, BRSTLTM]","[BRSTLTM, FILTNEW]"
+"2025","10","03","GW","2K","52","-0.8","11.92","1.79","2.66","12","34","6","0","0","[TAUNTON, WSMARE, BRSTLTM, AVONMTH, SVRNBCH, CLFDOWN]","[SVRNBCH, CLFDOWN, BRSTLTM, AVONMTH]"
+"2025","10","03","GW","2M","6","-0.68","2.25","0.69","1.42","3","3","0","0","0","[BATHSPA, EXETRSD, TAUNTON, PAIGNTN, WSMARE]","[BRDFDOA, YATTON, BRSTLTM]"
+"2025","10","03","GW","2O","13","-0.4","37.0","5.2","9.77","2","8","2","0","1","[SVRNBCH, BRSTLTM]","[SLSBRY, WEYMTH]"
+"2025","10","03","GW","2T","25","-0.9","8.07","0.6","1.78","12","12","1","0","0","[WRMNSTR, WORCSSH, WORCSFS, FROME, GTMLVRN, CHLTNHM, BATHSPA, WSTBRYW]","[BRSTLTM]"
+"2025","10","03","GW","2U","18","-0.44","14.86","2.78","3.74","3","11","4","0","0","[TAUNTON, EXMOUTH, EXETRSD, PAIGNTN, BRSTLTM]","[CRDFCEN]"
+"2025","10","03","GW","2V","17","-0.52","39.43","7.71","10.5","6","3","6","1","1","[YOVILPM, FRATTON, SOTON, SLSBRY, WEYMTH]","[FILTNEW, BRSTLTM]"
+"2025","10","03","GW","2Y","14","-0.19","7.38","1.55","2.1","1","12","1","0","0","[SVRNBCH, BRSTLTM, AVONMTH]","[WSMARE]"
+"2025","10","03","XC","1B","1","0.58","0.58","0.58",,"0","1","0","0","0","[PAIGNTN]","[BRSTLTM]"
+"2025","10","03","XC","1C","1","0.07","0.07","0.07",,"0","1","0","0","0","[BRSTLTM]","[PENZNCE]"
+"2025","10","03","XC","1E","3","0.31","15.3","6.18","8.01","0","2","0","1","0","[PLYMTH]","[LEEDS, NWCSTLE]"
+"2025","10","03","XC","1M","16","0.33","9.89","3.09","2.92","0","13","3","0","0","[BRSTLTM, PAIGNTN, PENZNCE, PLYMTH]","[MNCRPIC, BHAMNWS]"
+"2025","10","03","XC","1S","11","0.14","15.37","5.35","5.72","0","8","1","2","0","[BRSTLTM, PENZNCE, PLYMTH]","[EDINBUR, GLGC, ABRDEEN]"
+"2025","10","03","XC","1V","29","-0.75","11.3","2.47","3.07","2","22","5","0","0","[NWCSTLE, DRBY, ABRDEEN, LEEDS, YORK, GLGC, MNCRPIC, BHAMNWS, EDINBUR]","[PLYMTH, PAIGNTN, PENZNCE, BRSTLTM]"
+"2025","10","04","GW","1A","33","-0.73","22.48","4.57","5.15","4","17","11","1","0","[TAUNTON, WSMARE, BRSTLTM, EXETRSD, PENZNCE]","[PADTON, RDNGSTN]"
+"2025","10","04","GW","1B","2","-0.4","0.0","-0.2","0.28","1","1","0","0","0","[BRSTLTM]","[SWANSEA, CRDFCEN]"
+"2025","10","04","GW","1C","34","-1.08","27.67","4.71","6.54","7","15","9","3","0","[BRSTLTM, RDNGSTN, PADTON]","[PENZNCE, BATHSPA, WSMARE, TAUNTON, BRSTLTM, EXETRSD]"
+"2025","10","04","GW","1D","2","-1.13","-0.38","-0.75","0.53","2","0","0","0","0","[BRSTLTM]","[OXFD]"
+"2025","10","04","GW","1F","32","-0.52","90.05","18.87","21.51","2","11","5","8","6","[BRSTLTM, CRDFCEN, FRATTON, PHBR]","[PHBR, FAREHAM, CRDFCEN]"
+"2025","10","04","GW","1N","2","-0.63","7.75","3.56","5.92","1","0","1","0","0","[OXFD]","[BRSTLTM]"
+"2025","10","04","GW","1T","1","-0.17","-0.17","-0.17",,"1","0","0","0","0","[BRSTLTM]","[CHIPNHM]"
+"2025","10","04","GW","1Z","2","15.36","37.0","26.18","15.3","0","0","0","1","1","[WSTBRYW, BRSTLTM]","[CRDFCEN]"
+"2025","10","04","GW","2C","31","-3.0","48.12","4.44","9.72","9","14","5","2","1","[CRDFCEN, BRSTLTM, SVRNBCH]","[EXETRSD, PLYMTH, TAUNTON, BRSTLTM, WSTBRYW, FROME]"
+"2025","10","04","GW","2D","26","-1.0","6.6","0.42","1.72","14","11","1","0","0","[BRSTLTM, BRSTPWY]","[BRSTPWY, BRSTLTM]"
+"2025","10","04","GW","2E","5","-0.75","12.17","2.23","5.57","3","1","1","0","0","[TAUNTON, WRMNSTR, WSTBRYW]","[BRSTLTM]"
+"2025","10","04","GW","2F","1","-0.3","-0.3","-0.3",,"1","0","0","0","0","[BRSTLTM]","[WRMNSTR]"
+"2025","10","04","GW","2K","46","-0.77","12.74","1.59","3.18","18","21","7","0","0","[AVONMTH, SVRNBCH, BRSTLTM, TAUNTON, WSMARE]","[BRSTLTM, AVONMTH, SVRNBCH]"
+"2025","10","04","GW","2M","4","-0.3","3.08","0.65","1.63","2","2","0","0","0","[TAUNTON, EXETERC, WSMARE]","[BRSTLTM]"
+"2025","10","04","GW","2O","15","-0.14","13.0","4.55","4.27","1","8","6","0","0","[BRSTLTM]","[SLSBRY, WEYMTH]"
+"2025","10","04","GW","2T","5","-0.5","0.17","-0.16","0.27","4","1","0","0","0","[BRSTLTM, WSTBRYW, FROME]","[PAIGNTN, BRSTLTM]"
+"2025","10","04","GW","2U","16","-0.68","6.96","0.99","1.94","7","8","1","0","0","[PLYMTH, BRSTLTM, WSMARE, EXETRSD, TAUNTON]","[CRDFCEN]"
+"2025","10","04","GW","2V","20","-0.8","142.5","10.61","31.35","3","11","5","0","1","[SOTON, WEYMTH, PSEA, SLSBRY]","[BRSTLTM]"
+"2025","10","04","GW","2Y","11","-0.86","51.62","4.75","15.55","6","4","0","0","1","[AVONMTH, SVRNBCH, BRSTPWY]","[WSMARE]"
+"2025","10","04","GW","2Z","1","27.0","27.0","27.0",,"0","0","0","1","0","[BRSTLTM]","[WSMARE]"
+"2025","10","04","XC","1B","1","1.54","1.54","1.54",,"0","1","0","0","0","[PENZNCE]","[BRSTLTM]"
+"2025","10","04","XC","1C","1","1.24","1.24","1.24",,"0","1","0","0","0","[BRSTLTM]","[PENZNCE]"
+"2025","10","04","XC","1E","3","-0.43","0.64","0.21","0.57","1","2","0","0","0","[PLYMTH]","[BRSTPWY]"
+"2025","10","04","XC","1M","1","-0.5","-0.5","-0.5",,"1","0","0","0","0","[PLYMTH]","[BRSTPWY]"
+"2025","10","04","XC","1S","11","-0.29","4.14","1.2","1.52","3","8","0","0","0","[PENZNCE, PLYMTH]","[EDINBUR, BRSTPWY]"
+"2025","10","04","XC","1V","15","-0.79","10.08","1.77","3.16","6","6","3","0","0","[BRSTPWY]","[PENZNCE, PLYMTH]"
+"2025","10","05","GW","1A","15","-0.75","6.22","1.83","2.22","4","9","2","0","0","[PLYMTH, WSMARE, BRSTLTM]","[RDNGSTN, PADTON]"
+"2025","10","05","GW","1C","19","-1.5","8.67","2.6","3.26","3","11","5","0","0","[PADTON, SDON, RDNGSTN]","[WSMARE, SLOUGH, BRSTLTM, PENZNCE, DIDCOTP]"
+"2025","10","05","GW","1F","28","-0.44","28.17","4.26","6.5","3","18","4","3","0","[TRWBRDG, PHBR, PSEA, CRDFCEN, BRSTLTM]","[BRSTLTM, BRDFDOA, CRDFCEN, PHBR]"
+"2025","10","05","GW","1O","1","1.44","1.44","1.44",,"0","1","0","0","0","[BRSTLTM]","[PHBR]"
+"2025","10","05","GW","1V","3","-0.67","2.46","1.26","1.69","1","2","0","0","0","[WEYMTH, SLSBRY]","[CRDFCEN, BRSTLTM]"
+"2025","10","05","GW","2C","21","-1.75","28.07","2.76","6.16","4","13","3","1","0","[BRSTLTM, CRDFCEN, SVRNBCH]","[BRSTLTM, CCARY, WSTBRYW, EXETRSD, SLSBRY, PLYMTH, TAUNTON]"
+"2025","10","05","GW","2E","13","-1.25","0.0","-0.51","0.44","10","3","0","0","0","[BRSTLTM]","[BRSTPWY]"
+"2025","10","05","GW","2K","19","-0.76","5.56","1.5","1.88","5","13","1","0","0","[BRSTLTM, AVONMTH, SVRNBCH, WSMARE]","[AVONMTH, BRSTLTM, SVRNBCH]"
+"2025","10","05","GW","2M","6","0.0","9.75","5.51","4.23","0","3","3","0","0","[YATTON, TAUNTON, EXETRSD]","[WORLE, BRSTLTM]"
+"2025","10","05","GW","2O","3","0.0","1.9","0.78","0.99","0","3","0","0","0","[BRSTLTM]","[WEYMTH]"
+"2025","10","05","GW","2T","16","-0.83","3.0","0.08","1.06","11","5","0","0","0","[WSTBRYW, BRSTPWY, FROME]","[BRSTLTM]"
+"2025","10","05","GW","2U","11","-1.1","11.67","4.98","3.88","1","4","6","0","0","[PLYMTH, EXETRSD, TAUNTON, BRSTLTM]","[CRDFCEN]"
+"2025","10","05","GW","2V","5","-0.43","6.95","2.54","2.87","1","3","1","0","0","[WEYMTH, FRATTON]","[BRSTLTM]"
+"2025","10","05","GW","2Y","10","-1.0","2.36","0.09","0.96","6","4","0","0","0","[SVRNBCH, BRSTLTM]","[WSMARE]"
+"2025","10","05","XC","1C","2","-0.33","0.17","-0.08","0.35","1","1","0","0","0","[BRSTLTM]","[PLYMTH]"
+"2025","10","05","XC","1E","7","-0.67","2.04","0.73","0.93","2","5","0","0","0","[PENZNCE, PLYMTH]","[BRSTPWY, NWCSTLE, LEEDS]"
+"2025","10","05","XC","1M","12","-0.75","8.2","2.83","2.77","1","8","3","0","0","[BRSTLTM, PAIGNTN, PLYMTH]","[MNCRPIC, BHAMNWS]"
+"2025","10","05","XC","1S","19","-1.0","42.46","4.85","10.17","4","11","3","0","1","[PLYMTH, BRSTLTM, PENZNCE]","[DUNDETB, GLGC, BRSTPWY, EDINBUR]"
+"2025","10","05","XC","1T","1","-0.86","-0.86","-0.86",,"1","0","0","0","0","[BRSTPWY]","[PAIGNTN]"
+"2025","10","05","XC","1V","40","-0.7","12.38","2.21","3.16","6","27","7","0","0","[BRSTPWY, EDINBUR, BHAMNWS, MNCRPIC, LEEDS, ABRDEEN, DRBY, GLGC, NWCSTLE, YORK]","[PENZNCE, PAIGNTN, PLYMTH, BRSTLTM]"
+"2025","10","05","XC","1Z","5","-0.14","1.4","0.57","0.6","1","4","0","0","0","[BRSTPWY, PLYMTH]","[PLYMTH, BRSTPWY]"
+"2025","10","06","GW","1A","34","-1.25","13.5","1.45","2.64","8","24","2","0","0","[TOTNES, TAUNTON, PENZNCE, BRSTLTM, WSMARE, EXETRSD]","[RDNGSTN, PLYMTH, PADTON]"
+"2025","10","06","GW","1C","37","-1.27","6.12","0.83","1.66","14","21","2","0","0","[PADTON, RDNGSTN]","[WSMARE, BATHSPA, BRSTLTM, TAUNTON, PENZNCE, SWANSEA]"
+"2025","10","06","GW","1F","35","-0.67","7.6","1.2","1.84","9","24","2","0","0","[FRATTON, WSTBRYW, PHBR, FROME, BRSTLTM, CRDFCEN]","[FAREHAM, CRDFCEN, PHBR]"
+"2025","10","06","GW","1G","1","1.59","1.59","1.59",,"0","1","0","0","0","[PLYMTH]","[BRSTPWY]"
+"2025","10","06","GW","1H","1","-0.5","-0.5","-0.5",,"1","0","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","06","GW","1J","1","-0.16","-0.16","-0.16",,"1","0","0","0","0","[CRDFCEN]","[FROME]"
+"2025","10","06","GW","1K","1","0.35","0.35","0.35",,"0","1","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","06","GW","2C","38","-2.33","22.56","1.44","4.03","16","20","1","1","0","[BRSTPWY, BRSTLTM, CRDFCEN, BATHSPA, SEVTNLJ, TAUNTON, YATTON]","[PENZNCE, EXETRSD, PLYMTH, WSTBRYW, FROME, BRSTLTM, TAUNTON, OLDFLDP, NWPTRTG, BRDGWTR, NAILSEA]"
+"2025","10","06","GW","2D","2","-0.5","0.6","0.05","0.78","1","1","0","0","0","[BRSTLTM]","[BRSTPWY]"
+"2025","10","06","GW","2E","22","-1.25","15.75","1.14","3.82","10","10","1","1","0","[BRSTLTM, WSTBRYW, WRMNSTR]","[BRSTPWY]"
+"2025","10","06","GW","2F","5","-0.53","0.35","0.02","0.36","2","3","0","0","0","[BRSTLTM]","[WRMNSTR, EXMOUTH]"
+"2025","10","06","GW","2H","26","-1.33","12.25","0.53","2.66","17","8","1","0","0","[BRSTLTM, BRSTPWY, FILTNEW]","[FILTNEW, BRSTPWY, BRSTLTM]"
+"2025","10","06","GW","2K","56","-0.75","21.33","1.99","4.1","14","37","3","2","0","[SVRNBCH, AVONMTH, CLFDOWN, WSMARE, BRSTLTM, TAUNTON]","[BRSTLTM, AVONMTH, CLFDOWN, SVRNBCH]"
+"2025","10","06","GW","2M","7","-1.25","11.5","2.53","4.91","3","2","2","0","0","[EXETRSD, WSMARE, PAIGNTN, TAUNTON, BATHSPA]","[YATTON, BRSTLTM, BRDFDOA]"
+"2025","10","06","GW","2O","13","-0.35","3.26","0.93","1.24","3","10","0","0","0","[SVRNBCH, BRSTLTM, BRSTPWY]","[SLSBRY, WEYMTH]"
+"2025","10","06","GW","2T","23","-1.25","15.25","1.37","4.13","13","7","2","1","0","[WRMNSTR, FROME, BRSTPWY, BATHSPA, WSTBRYW]","[BRSTLTM]"
+"2025","10","06","GW","2U","18","-0.79","13.56","2.57","3.55","3","11","4","0","0","[BRSTLTM, PAIGNTN, EXETRSD, TAUNTON, EXMOUTH]","[CRDFCEN]"
+"2025","10","06","GW","2V","20","-0.72","21.09","2.01","4.85","9","9","1","1","0","[YOVILPM, SOTON, WEYMTH, FRATTON, SLSBRY]","[FILTNEW, BRSTLTM, BRSTPWY]"
+"2025","10","06","GW","2Y","14","-0.63","4.25","1.32","1.64","4","10","0","0","0","[SVRNBCH, AVONMTH, BRSTLTM]","[WSMARE]"
+"2025","10","06","GW","2Z","2","3.14","5.26","4.2","1.5","0","1","1","0","0","[BRSTLTM]","[SVRNBCH]"
+"2025","10","06","XC","1B","1","1.67","1.67","1.67",,"0","1","0","0","0","[PAIGNTN]","[BRSTLTM]"
+"2025","10","06","XC","1C","1","-0.03","-0.03","-0.03",,"1","0","0","0","0","[BRSTLTM]","[PENZNCE]"
+"2025","10","06","XC","1E","6","-0.1","1.61","0.75","0.65","1","5","0","0","0","[PLYMTH]","[NWCSTLE, LEEDS]"
+"2025","10","06","XC","1M","24","-1.25","8.2","1.86","2.31","3","18","3","0","0","[BRSTLTM, PAIGNTN, PLYMTH]","[MNCRPIC, BHAMNWS]"
+"2025","10","06","XC","1S","22","-0.42","42.46","6.03","10.12","5","9","5","2","1","[BRSTLTM, PENZNCE, PLYMTH]","[EDINBUR, GLGC, DUNDETB]"
+"2025","10","06","XC","1T","4","-0.86","4.53","1.25","2.4","2","2","0","0","0","[BRSTLTM, BRSTPWY]","[PAIGNTN]"
+"2025","10","06","XC","1V","56","-0.42","12.38","1.76","2.65","7","44","5","0","0","[EDINBUR, MNCRPIC, BHAMNWS, ABRDEEN, YORK, GLGC, DRBY, LEEDS, NWCSTLE]","[BRSTLTM, PAIGNTN, PENZNCE, PLYMTH]"
+"2025","10","06","XC","1Z","12","-0.29","2.83","0.91","1.02","2","10","0","0","0","[BRSTPWY, PENZNCE, PLYMTH]","[PENZNCE, BRSTLTM, PLYMTH, BRSTPWY]"
+"2025","10","07","GW","1A","35","-1.0","14.24","2.39","3.32","6","25","4","0","0","[TOTNES, PENZNCE, WSMARE, EXETRSD, BRSTLTM, TAUNTON, PLYMTH]","[PLYMTH, RDNGSTN, PADTON]"
+"2025","10","07","GW","1C","36","-3.0","15.25","2.48","3.96","10","19","6","1","0","[PADTON, RDNGSTN]","[BATHSPA, BRSTLTM, PENZNCE, TAUNTON, SWANSEA, WSMARE]"
+"2025","10","07","GW","1F","35","-0.37","64.53","3.79","10.98","6","23","5","0","1","[FRATTON, PHBR, WSTBRYW, FROME, CRDFCEN, BRSTLTM]","[FAREHAM, CRDFCEN, PHBR]"
+"2025","10","07","GW","1G","1","26.65","26.65","26.65",,"0","0","0","1","0","[PLYMTH]","[BRSTPWY]"
+"2025","10","07","GW","1H","1","-0.6","-0.6","-0.6",,"1","0","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","07","GW","1J","1","12.63","12.63","12.63",,"0","0","1","0","0","[CRDFCEN]","[FROME]"
+"2025","10","07","GW","1K","1","2.55","2.55","2.55",,"0","1","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","07","GW","2C","38","-1.5","24.5","3.06","6.08","10","22","3","3","0","[SEVTNLJ, CRDFCEN, YATTON, BRSTLTM, TAUNTON, BRSTPWY, BATHSPA]","[BRSTLTM, NWPTRTG, PLYMTH, EXETRSD, PENZNCE, NAILSEA, TAUNTON, BRDGWTR, WSTBRYW, OLDFLDP, FROME]"
+"2025","10","07","GW","2D","2","0.38","3.0","1.69","1.86","0","2","0","0","0","[BRSTLTM]","[BRSTPWY]"
+"2025","10","07","GW","2E","22","-1.0","19.75","1.89","4.67","8","12","1","1","0","[WSTBRYW, WRMNSTR, BRSTLTM]","[BRSTPWY, GLOSTER]"
+"2025","10","07","GW","2F","5","-0.26","1.8","0.27","0.86","3","2","0","0","0","[BRSTLTM]","[WRMNSTR, EXMOUTH]"
+"2025","10","07","GW","2H","25","-0.8","11.25","0.72","3.21","18","5","2","0","0","[FILTNEW, BRSTLTM]","[BRSTLTM, FILTNEW]"
+"2025","10","07","GW","2K","55","-0.85","16.41","2.04","3.83","16","32","5","2","0","[TAUNTON, WSMARE, BRSTLTM, SVRNBCH, CLFDOWN, AVONMTH]","[CLFDOWN, AVONMTH, SVRNBCH, BRSTLTM]"
+"2025","10","07","GW","2M","7","-0.5","6.0","1.35","2.34","2","4","1","0","0","[EXETRSD, BATHSPA, TAUNTON, PAIGNTN, WSMARE]","[YATTON, BRDFDOA, BRSTLTM]"
+"2025","10","07","GW","2O","13","-0.22","5.03","1.07","1.51","4","8","1","0","0","[SVRNBCH, BRSTPWY, BRSTLTM]","[SLSBRY, WEYMTH]"
+"2025","10","07","GW","2T","22","-3.0","4.0","0.4","1.65","12","10","0","0","0","[WSTBRYW, BRSTPWY, BATHSPA, WRMNSTR, FROME]","[BRSTLTM]"
+"2025","10","07","GW","2U","18","-0.62","21.41","3.35","5.15","5","9","3","1","0","[TAUNTON, PAIGNTN, EXMOUTH, EXETRSD, BRSTLTM]","[CRDFCEN]"
+"2025","10","07","GW","2V","19","-0.55","13.65","1.68","3.5","7","9","3","0","0","[CCARY, WEYMTH, FRATTON, SLSBRY, SOTON]","[FILTNEW, BRSTPWY, BRSTLTM]"
+"2025","10","07","GW","2Y","14","-0.72","4.53","0.93","1.56","6","8","0","0","0","[SVRNBCH, BRSTLTM, AVONMTH]","[WSMARE]"
+"2025","10","07","GW","2Z","1","-0.5","-0.5","-0.5",,"1","0","0","0","0","[BRSTLTM]","[BRSTPWY]"
+"2025","10","07","XC","1B","1","1.42","1.42","1.42",,"0","1","0","0","0","[PAIGNTN]","[BRSTLTM]"
+"2025","10","07","XC","1C","1","0.26","0.26","0.26",,"0","1","0","0","0","[BRSTLTM]","[PENZNCE]"
+"2025","10","07","XC","1E","3","-0.1","1.13","0.37","0.66","1","2","0","0","0","[PLYMTH]","[LEEDS, NWCSTLE]"
+"2025","10","07","XC","1M","12","-1.25","2.92","0.9","1.2","2","10","0","0","0","[PLYMTH, PAIGNTN, BRSTLTM]","[BHAMNWS, MNCRPIC]"
+"2025","10","07","XC","1S","11","-0.42","17.73","4.52","6.67","2","5","2","2","0","[PLYMTH, BRSTLTM, PENZNCE]","[DUNDETB, GLGC, EDINBUR]"
+"2025","10","07","XC","1T","3","-0.17","4.53","1.95","2.38","1","2","0","0","0","[BRSTLTM, BRSTPWY]","[PAIGNTN]"
+"2025","10","07","XC","1V","28","-0.42","9.04","1.44","2.17","3","23","2","0","0","[EDINBUR, MNCRPIC, GLGC, YORK, LEEDS, NWCSTLE, DRBY, ABRDEEN, BHAMNWS]","[BRSTLTM, PLYMTH, PENZNCE, PAIGNTN]"
+"2025","10","07","XC","1Z","6","-0.29","2.83","0.85","1.36","1","5","0","0","0","[PENZNCE, PLYMTH, BRSTPWY]","[BRSTPWY, PLYMTH, BRSTLTM]"
+"2025","10","08","GW","1A","34","-0.8","7.0","1.89","2.02","6","24","4","0","0","[EXETRSD, TAUNTON, BRSTLTM, WSMARE, PENZNCE, TOTNES]","[PADTON, RDNGSTN, PLYMTH]"
+"2025","10","08","GW","1C","36","-1.33","20.5","1.75","4.32","14","19","2","1","0","[RDNGSTN, PADTON]","[BATHSPA, WSMARE, TAUNTON, PENZNCE, BRSTLTM, SWANSEA]"
+"2025","10","08","GW","1F","35","-0.63","11.58","2.76","3.24","5","21","9","0","0","[FROME, PHBR, WSTBRYW, BRSTLTM, CRDFCEN, FRATTON]","[CRDFCEN, PHBR, FAREHAM]"
+"2025","10","08","GW","1G","1","1.25","1.25","1.25",,"0","1","0","0","0","[PLYMTH]","[GLOSTER]"
+"2025","10","08","GW","1H","1","-0.56","-0.56","-0.56",,"1","0","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","08","GW","1J","1","-0.1","-0.1","-0.1",,"1","0","0","0","0","[CRDFCEN]","[FROME]"
+"2025","10","08","GW","1K","1","2.61","2.61","2.61",,"0","1","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","08","GW","2C","38","-1.79","3.52","0.09","1.18","23","15","0","0","0","[YATTON, BATHSPA, CRDFCEN, SEVTNLJ, BRSTLTM, TAUNTON, GLOSTER, BRSTPWY]","[PENZNCE, NAILSEA, OLDFLDP, EXETRSD, FROME, BRSTLTM, NWPTRTG, TAUNTON, BRDGWTR, PLYMTH, WSTBRYW]"
+"2025","10","08","GW","2D","2","5.8","7.25","6.53","1.03","0","0","2","0","0","[BRSTLTM]","[BRSTPWY]"
+"2025","10","08","GW","2E","24","-1.25","6.87","0.47","2.07","16","6","2","0","0","[BRSTLTM, WSTBRYW, WRMNSTR]","[WORCSSH, GTMLVRN, GLOSTER, WORCSFS]"
+"2025","10","08","GW","2F","5","-0.16","3.84","1.38","1.63","1","4","0","0","0","[BRSTLTM]","[EXMOUTH, WRMNSTR]"
+"2025","10","08","GW","2H","24","-1.13","2.75","-0.02","1.01","17","7","0","0","0","[BRSTLTM, FILTNEW]","[FILTNEW, BRSTLTM]"
+"2025","10","08","GW","2K","56","-1.0","3.8","0.48","1.21","25","31","0","0","0","[TAUNTON, BRSTLTM, WSMARE, CLFDOWN, AVONMTH, SVRNBCH]","[AVONMTH, SVRNBCH, BRSTLTM, CLFDOWN]"
+"2025","10","08","GW","2M","7","-0.43","5.82","1.39","2.72","4","2","1","0","0","[WSMARE, TAUNTON, PAIGNTN, EXETRSD, BATHSPA]","[BRSTLTM, YATTON, BRDFDOA]"
+"2025","10","08","GW","2O","12","-0.56","18.23","4.7","5.53","1","8","2","1","0","[BRSTLTM, SVRNBCH, GLOSTER]","[SLSBRY, WEYMTH]"
+"2025","10","08","GW","2T","29","-0.8","7.39","0.95","1.8","9","19","1","0","0","[GTMLVRN, WSTBRYW, WORCSSH, GLOSTER, CHLTNHM, WRMNSTR, WORCSFS, FROME, BATHSPA]","[BRSTLTM]"
+"2025","10","08","GW","2U","18","-0.43","6.67","1.09","1.8","4","13","1","0","0","[PAIGNTN, EXMOUTH, TAUNTON, EXETRSD, BRSTLTM]","[CRDFCEN]"
+"2025","10","08","GW","2V","16","-0.28","18.86","3.67","5.24","3","9","3","1","0","[CCARY, FRATTON, SLSBRY, WEYMTH]","[FILTNEW, BRSTLTM, GLOSTER]"
+"2025","10","08","GW","2Y","14","-0.54","3.36","0.41","0.95","2","12","0","0","0","[AVONMTH, SVRNBCH, BRSTLTM]","[WSMARE]"
+"2025","10","08","XC","1B","1","1.42","1.42","1.42",,"0","1","0","0","0","[PAIGNTN]","[BRSTLTM]"
+"2025","10","08","XC","1C","1","2.59","2.59","2.59",,"0","1","0","0","0","[BRSTLTM]","[PENZNCE]"
+"2025","10","08","XC","1E","3","0.18","2.07","0.99","0.97","0","3","0","0","0","[PLYMTH]","[NWCSTLE, LEEDS]"
+"2025","10","08","XC","1M","15","-1.0","15.81","3.64","4.24","1","9","4","1","0","[PAIGNTN, BRSTLTM, PLYMTH, PENZNCE]","[MNCRPIC, BHAMNWS]"
+"2025","10","08","XC","1S","12","0.22","5.28","1.91","1.67","0","11","1","0","0","[PENZNCE, PLYMTH, BRSTLTM]","[DUNDETB, EDINBUR, GLGC]"
+"2025","10","08","XC","1V","29","-0.67","19.8","2.33","3.89","3","22","3","1","0","[BHAMNWS, MNCRPIC, EDINBUR, GLGC, DRBY, LEEDS, ABRDEEN, YORK, NWCSTLE]","[PAIGNTN, BRSTLTM, PENZNCE, PLYMTH]"
+"2025","10","09","GW","1A","34","-0.45","20.29","2.24","3.94","8","22","3","1","0","[WSMARE, TAUNTON, PENZNCE, BRSTLTM, EXETRSD, TOTNES]","[RDNGSTN, PADTON, PLYMTH]"
+"2025","10","09","GW","1C","37","-1.08","20.5","1.71","3.93","12","22","2","1","0","[RDNGSTN, PADTON]","[PENZNCE, BRSTLTM, SWANSEA, BATHSPA, WSMARE, TAUNTON]"
+"2025","10","09","GW","1F","35","-0.65","8.53","1.23","2.03","13","20","2","0","0","[FRATTON, FROME, PHBR, WSTBRYW, BRSTLTM, CRDFCEN]","[FAREHAM, CRDFCEN, PHBR]"
+"2025","10","09","GW","1G","1","-0.31","-0.31","-0.31",,"1","0","0","0","0","[PLYMTH]","[GLOSTER]"
+"2025","10","09","GW","1H","1","0.67","0.67","0.67",,"0","1","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","09","GW","1J","1","8.6","8.6","8.6",,"0","0","1","0","0","[CRDFCEN]","[FROME]"
+"2025","10","09","GW","1K","1","-0.36","-0.36","-0.36",,"1","0","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","09","GW","2C","38","-2.0","9.15","1.1","2.33","14","21","3","0","0","[BRSTLTM, GLOSTER, BRSTPWY, CRDFCEN, YATTON, TAUNTON, SEVTNLJ, BATHSPA]","[WSTBRYW, BRSTLTM, TAUNTON, PLYMTH, EXETRSD, NAILSEA, FROME, BRDGWTR, NWPTRTG, PENZNCE, OLDFLDP]"
+"2025","10","09","GW","2D","2","-0.5","-0.14","-0.32","0.25","2","0","0","0","0","[BRSTLTM]","[BRSTPWY]"
+"2025","10","09","GW","2E","24","-0.9","22.79","2.28","5.6","12","8","3","1","0","[WSTBRYW, WRMNSTR, BRSTLTM]","[WORCSSH, GLOSTER, WORCSFS, GTMLVRN]"
+"2025","10","09","GW","2F","5","-0.4","1.94","0.63","1.0","2","3","0","0","0","[BRSTLTM]","[EXMOUTH, WRMNSTR]"
+"2025","10","09","GW","2H","26","-0.88","3.75","-0.24","0.92","20","6","0","0","0","[BRSTLTM, FILTNEW]","[FILTNEW, BRSTLTM]"
+"2025","10","09","GW","2K","55","-0.7","6.95","0.93","1.5","20","34","1","0","0","[BRSTLTM, TAUNTON, WSMARE, AVONMTH, SVRNBCH, CLFDOWN]","[AVONMTH, SVRNBCH, CLFDOWN, BRSTLTM]"
+"2025","10","09","GW","2M","7","-0.75","1.0","0.08","0.61","3","4","0","0","0","[WSMARE, TAUNTON, PAIGNTN, BATHSPA, EXETRSD]","[BRSTLTM, BRDFDOA, YATTON]"
+"2025","10","09","GW","2O","15","-0.56","10.52","2.56","3.12","4","8","3","0","0","[BRSTLTM, GLOSTER, SVRNBCH]","[WEYMTH, SLSBRY]"
+"2025","10","09","GW","2T","29","-1.17","52.38","3.06","10.24","13","11","3","1","1","[FROME, GLOSTER, GTMLVRN, BATHSPA, WORCSSH, WRMNSTR, WORCSFS, CHLTNHM, WSTBRYW]","[BRSTLTM]"
+"2025","10","09","GW","2U","18","-0.38","10.56","1.74","2.84","3","13","2","0","0","[EXETRSD, TAUNTON, BRSTLTM, PAIGNTN, EXMOUTH]","[CRDFCEN]"
+"2025","10","09","GW","2V","21","-0.73","17.44","3.58","4.95","5","10","5","1","0","[CCARY, WEYMTH, SLSBRY, FRATTON, SOTON]","[FILTNEW, GLOSTER, BRSTLTM]"
+"2025","10","09","GW","2Y","14","-0.44","2.4","0.96","0.84","2","12","0","0","0","[SVRNBCH, AVONMTH, BRSTLTM]","[WSMARE]"
+"2025","10","09","GW","2Z","1","17.75","17.75","17.75",,"0","0","0","1","0","[BRSTPWY]","[BRSTLTM]"
+"2025","10","09","XC","1B","1","-0.18","-0.18","-0.18",,"1","0","0","0","0","[PAIGNTN]","[BRSTLTM]"
+"2025","10","09","XC","1C","1","0.26","0.26","0.26",,"0","1","0","0","0","[BRSTLTM]","[PENZNCE]"
+"2025","10","09","XC","1E","3","0.29","1.65","0.78","0.75","0","3","0","0","0","[PLYMTH]","[LEEDS, NWCSTLE]"
+"2025","10","09","XC","1M","16","-0.22","5.48","1.79","1.68","1","14","1","0","0","[BRSTLTM, PLYMTH, PENZNCE, PAIGNTN]","[BHAMNWS, MNCRPIC]"
+"2025","10","09","XC","1P","1","0.0","0.0","0.0",,"0","1","0","0","0","[BRSTLTM]","[CRDFCEN]"
+"2025","10","09","XC","1S","11","0.17","21.3","5.54","6.31","0","6","4","1","0","[PLYMTH, BRSTLTM, PENZNCE]","[EDINBUR, DUNDETB, GLGC]"
+"2025","10","09","XC","1V","29","-1.0","36.65","5.09","8.5","4","15","8","1","1","[MNCRPIC, BHAMNWS, YORK, NWCSTLE, DRBY, LEEDS, GLGC, ABRDEEN, EDINBUR]","[PAIGNTN, PLYMTH, PENZNCE, BRSTLTM]"
+"2025","10","10","GW","1A","34","-1.09","6.38","1.27","1.84","7","26","1","0","0","[PENZNCE, BRSTLTM, WSMARE, TAUNTON, EXETRSD, PLYMTH]","[PADTON, RDNGSTN, PLYMTH]"
+"2025","10","10","GW","1C","37","-1.5","22.92","2.86","5.21","11","18","6","2","0","[PADTON, RDNGSTN]","[TAUNTON, BATHSPA, WSMARE, SWANSEA, BRSTLTM, PENZNCE]"
+"2025","10","10","GW","1F","35","-0.29","15.79","2.91","4.07","5","22","7","1","0","[FAREHAM, FROME, WSTBRYW, PHBR, CRDFCEN, BRSTLTM]","[SOTON, CRDFCEN, PHBR]"
+"2025","10","10","GW","1G","1","3.64","3.64","3.64",,"0","1","0","0","0","[PLYMTH]","[GLOSTER]"
+"2025","10","10","GW","1H","1","-0.3","-0.3","-0.3",,"1","0","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","10","GW","1J","1","-0.13","-0.13","-0.13",,"1","0","0","0","0","[CRDFCEN]","[FROME]"
+"2025","10","10","GW","1K","1","5.5","5.5","5.5",,"0","0","1","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","10","GW","2C","39","-3.38","9.0","0.67","2.62","25","11","3","0","0","[BATHSPA, BRSTPWY, BRSTLTM, GLOSTER, YATTON, PATCHWY, TAUNTON, CRDFCEN]","[OLDFLDP, WSTBRYW, FROME, BRSTLTM, NAILSEA, PLYMTH, EXETRSD, SEVTNLJ, BRDGWTR, PENZNCE, TAUNTON]"
+"2025","10","10","GW","2D","3","-0.25","3.0","0.86","1.86","2","1","0","0","0","[BRSTLTM, WSMARE]","[BRSTPWY]"
+"2025","10","10","GW","2E","24","-1.38","11.5","1.84","3.56","8","12","4","0","0","[WRMNSTR, WSTBRYW, BRSTLTM]","[WORCSSH, GTMLVRN, WORCSFS, GLOSTER]"
+"2025","10","10","GW","2F","5","-0.25","3.39","1.3","1.46","1","4","0","0","0","[BRSTLTM]","[WRMNSTR, EXMOUTH]"
+"2025","10","10","GW","2H","23","-1.0","19.33","0.46","4.13","19","3","0","1","0","[BRSTLTM, FILTNEW]","[FILTNEW, BRSTLTM]"
+"2025","10","10","GW","2K","53","-1.0","11.0","1.19","2.16","18","31","4","0","0","[TAUNTON, SVRNBCH, AVONMTH, CLFDOWN, BRSTLTM, WSMARE]","[SVRNBCH, BRSTLTM, AVONMTH, CLFDOWN]"
+"2025","10","10","GW","2M","6","-0.75","3.61","0.4","1.65","3","3","0","0","0","[EXETRSD, BATHSPA, PAIGNTN, WSMARE, TAUNTON]","[YATTON, BRDFDOA, BRSTLTM]"
+"2025","10","10","GW","2O","13","-0.52","30.83","2.85","8.45","5","7","0","0","1","[SVRNBCH, BRSTLTM, GLOSTER]","[SLSBRY, WEYMTH]"
+"2025","10","10","GW","2T","29","-2.6","5.44","0.84","1.57","9","19","1","0","0","[CHLTNHM, FROME, WRMNSTR, GTMLVRN, WORCSSH, WORCSFS, BATHSPA, WSTBRYW, GLOSTER]","[BRSTLTM]"
+"2025","10","10","GW","2U","18","-0.5","6.04","2.05","2.01","3","12","3","0","0","[EXETRSD, EXMOUTH, BRSTLTM, TAUNTON, PAIGNTN]","[CRDFCEN]"
+"2025","10","10","GW","2V","19","-0.7","17.44","1.87","4.54","8","9","1","1","0","[FRATTON, SOTON, SLSBRY, WEYMTH, CCARY]","[BRSTLTM, GLOSTER, FILTNEW]"
+"2025","10","10","GW","2Y","14","-0.78","4.04","0.81","1.58","5","9","0","0","0","[BRSTLTM, SVRNBCH, AVONMTH]","[WSMARE]"
+"2025","10","10","XC","1B","1","-1.0","-1.0","-1.0",,"1","0","0","0","0","[PAIGNTN]","[BRSTLTM]"
+"2025","10","10","XC","1C","1","-0.18","-0.18","-0.18",,"1","0","0","0","0","[BRSTLTM]","[PENZNCE]"
+"2025","10","10","XC","1E","4","1.45","8.38","3.41","3.34","0","3","1","0","0","[PLYMTH]","[LEEDS, NWCSTLE]"
+"2025","10","10","XC","1M","19","0.0","7.92","2.0","2.18","0","17","2","0","0","[PAIGNTN, BRSTLTM, PENZNCE, PLYMTH]","[MNCRPIC, BHAMNWS]"
+"2025","10","10","XC","1P","1","-1.0","-1.0","-1.0",,"1","0","0","0","0","[BRSTLTM]","[CRDFCEN]"
+"2025","10","10","XC","1S","12","0.56","22.21","7.17","7.77","0","7","2","3","0","[PENZNCE, PLYMTH, BRSTLTM]","[ABRDEEN, GLGC, EDINBUR, LEEDS]"
+"2025","10","10","XC","1V","38","-1.17","28.34","5.2","7.62","4","22","6","6","0","[LEEDS, GLGC, YORK, EDINBUR, ABRDEEN, DRBY, NWCSTLE, BHAMNWS, MNCRPIC]","[PAIGNTN, PLYMTH, BRSTLTM, PENZNCE]"
+"2025","10","10","XC","1Z","1","34.18","34.18","34.18",,"0","0","0","0","1","[EDINBUR]","[PLYMTH]"
+"2025","10","11","GW","1A","33","-0.91","10.35","1.85","2.58","7","23","3","0","0","[WSMARE, TAUNTON, EXETRSD, PENZNCE, BRSTLTM]","[RDNGSTN, PADTON]"
+"2025","10","11","GW","1B","2","-0.5","0.0","-0.25","0.35","1","1","0","0","0","[BRSTLTM]","[CRDFCEN, SWANSEA]"
+"2025","10","11","GW","1C","34","-1.56","10.97","1.81","3.48","12","16","6","0","0","[RDNGSTN, PADTON, BRSTLTM]","[WSMARE, RDNGSTN, BRSTLTM, EXETRSD, TAUNTON, BATHSPA, PENZNCE]"
+"2025","10","11","GW","1D","2","-0.63","0.13","-0.25","0.53","1","1","0","0","0","[BRSTLTM]","[OXFD]"
+"2025","10","11","GW","1F","34","-0.82","8.5","1.39","1.86","3","30","1","0","0","[BRSTLTM, NWPTRTG, CRDFCEN, PHBR, FRATTON]","[PHBR, CRDFCEN, NWPTRTG, FAREHAM]"
+"2025","10","11","GW","1K","1","-0.5","-0.5","-0.5",,"1","0","0","0","0","[CHLTNHM]","[BRSTLTM]"
+"2025","10","11","GW","1N","2","-0.75","-0.25","-0.5","0.35","2","0","0","0","0","[OXFD]","[BRSTLTM]"
+"2025","10","11","GW","1T","1","1.0","1.0","1.0",,"0","1","0","0","0","[BRSTLTM]","[CHIPNHM]"
+"2025","10","11","GW","2C","32","-0.75","9.11","0.6","1.89","14","17","1","0","0","[BRSTLTM, SVRNBCH, GLOSTER, CRDFCEN]","[FROME, BRSTLTM, PLYMTH, WSTBRYW, TAUNTON, EXETRSD]"
+"2025","10","11","GW","2E","21","-1.13","6.13","0.37","1.72","14","6","1","0","0","[BRSTLTM, TAUNTON, WRMNSTR, WSTBRYW]","[WORCSFS, GLOSTER, GTMLVRN]"
+"2025","10","11","GW","2F","1","-0.37","-0.37","-0.37",,"1","0","0","0","0","[BRSTLTM]","[WRMNSTR]"
+"2025","10","11","GW","2H","23","-1.14","7.88","0.28","1.99","15","7","1","0","0","[BRSTLTM, FILTNEW]","[FILTNEW, BRSTLTM]"
+"2025","10","11","GW","2K","54","-0.93","4.67","0.89","1.45","16","38","0","0","0","[TAUNTON, WSMARE, BRSTLTM, AVONMTH, SVRNBCH]","[AVONMTH, SVRNBCH, BRSTLTM]"
+"2025","10","11","GW","2M","5","-0.2","12.8","4.03","5.22","1","3","1","0","0","[WSMARE, EXETERC, TAUNTON]","[BRSTLTM]"
+"2025","10","11","GW","2O","18","-0.4","5.67","1.2","1.7","5","12","1","0","0","[BRSTLTM, GLOSTER, CHLTNHM]","[SLSBRY, WEYMTH]"
+"2025","10","11","GW","2T","24","-1.0","2.83","0.37","0.87","9","15","0","0","0","[GLOSTER, GTMLVRN, FROME, WORCSFS, WSTBRYW, BRSTLTM]","[BRSTLTM, PAIGNTN]"
+"2025","10","11","GW","2U","16","-0.7","5.5","1.37","1.9","5","10","1","0","0","[TAUNTON, PLYMTH, WSMARE, EXETRSD, BRSTLTM]","[CRDFCEN]"
+"2025","10","11","GW","2V","23","-0.5","11.18","1.82","2.77","6","15","2","0","0","[WEYMTH, PSEA, SOTON, SLSBRY]","[WORCSFS, GLOSTER, CHLTNHM, BRSTLTM, WORCSSH]"
+"2025","10","11","GW","2Y","13","-0.8","9.86","1.27","2.94","5","7","1","0","0","[BRSTPWY, SVRNBCH, AVONMTH, BRSTLTM]","[WSMARE]"
+"2025","10","11","XC","1B","2","-0.33","0.97","0.32","0.92","1","1","0","0","0","[PENZNCE, PAIGNTN]","[BRSTLTM]"
+"2025","10","11","XC","1C","1","0.1","0.1","0.1",,"0","1","0","0","0","[BRSTLTM]","[PENZNCE]"
+"2025","10","11","XC","1E","3","1.45","5.88","3.16","2.38","0","2","1","0","0","[PLYMTH]","[LEEDS]"
+"2025","10","11","XC","1M","14","0.4","29.5","5.72","9.01","0","11","1","2","0","[BRSTLTM, PAIGNTN, PLYMTH]","[BHAMNWS, MNCRPIC, DRBY]"
+"2025","10","11","XC","1S","11","-0.06","3.73","1.35","1.02","1","10","0","0","0","[BRSTLTM, PENZNCE, PLYMTH]","[LEEDS]"
+"2025","10","11","XC","1V","29","-0.58","17.19","1.89","3.63","4","22","2","1","0","[MNCRPIC, BHAMNWS, LEEDS, DRBY]","[PAIGNTN, BRSTLTM, PLYMTH, PENZNCE]"
+"2025","10","12","GW","1A","15","0.13","13.08","3.5","3.91","0","11","4","0","0","[WSMARE, BRSTLTM, PLYMTH]","[PADTON, RDNGSTN]"
+"2025","10","12","GW","1C","18","-2.12","16.08","4.65","5.31","2","9","5","2","0","[SDON, RDNGSTN, PADTON]","[DIDCOTP, PENZNCE, WSMARE, BRSTLTM]"
+"2025","10","12","GW","1F","28","-0.3","9.66","3.08","2.72","2","22","4","0","0","[NWPTRTG, BRSTPWY, CRDFCEN, BRSTLTM, TRWBRDG, PSEA, PHBR]","[PHBR, BRDFDOA, BRSTPWY, CRDFCEN, BRSTLTM, NWPTRTG]"
+"2025","10","12","GW","1O","1","0.28","0.28","0.28",,"0","1","0","0","0","[BRSTLTM]","[PHBR]"
+"2025","10","12","GW","1V","3","1.75","13.0","7.01","5.66","0","1","2","0","0","[SLSBRY, WEYMTH]","[BRSTLTM, BRSTPWY]"
+"2025","10","12","GW","2C","17","-2.25","5.24","1.08","2.01","8","8","1","0","0","[SVRNBCH, BRSTLTM, BRSTPWY, CRDFCEN]","[WSTBRYW, EXETRSD, PLYMTH, CCARY, BRSTLTM, TAUNTON, SLSBRY]"
+"2025","10","12","GW","2D","1","1.25","1.25","1.25",,"0","1","0","0","0","[EXETRSD]","[BRSTPWY]"
+"2025","10","12","GW","2E","12","-1.6","21.0","2.44","6.11","4","7","0","1","0","[BRSTLTM]","[WORCSFS, WORCSSH, GLOSTER]"
+"2025","10","12","GW","2K","17","-0.38","6.97","1.66","2.3","5","9","3","0","0","[BRSTLTM, WSMARE, SVRNBCH, AVONMTH]","[SVRNBCH, BRSTLTM, AVONMTH]"
+"2025","10","12","GW","2M","9","-0.05","10.83","5.21","3.36","1","3","5","0","0","[YATTON, PLYMTH, TAUNTON, EXETRSD]","[WORLE, BRSTLTM]"
+"2025","10","12","GW","2O","3","-0.37","8.16","2.63","4.8","1","1","1","0","0","[BRSTLTM]","[WEYMTH]"
+"2025","10","12","GW","2T","14","-0.61","5.89","0.32","1.64","10","3","1","0","0","[WORCSSH, WSTBRYW, FROME, WORCSFS, GLOSTER, CHLTNHM]","[BRSTLTM]"
+"2025","10","12","GW","2U","3","0.23","4.71","2.84","2.33","0","3","0","0","0","[EXETRSD]","[CRDFCEN]"
+"2025","10","12","GW","2V","4","-0.41","3.61","2.03","1.75","1","3","0","0","0","[WEYMTH]","[BRSTLTM]"
+"2025","10","12","GW","2Y","10","-0.36","9.86","1.94","3.31","4","4","2","0","0","[SVRNBCH, BRSTLTM]","[WSMARE]"
+"2025","10","12","XC","1C","2","-0.5","0.0","-0.25","0.35","1","1","0","0","0","[BRSTLTM]","[PLYMTH]"
+"2025","10","12","XC","1E","4","0.67","6.39","2.65","2.66","0","3","1","0","0","[PENZNCE, PLYMTH]","[LEEDS, SHEFFLD]"
+"2025","10","12","XC","1M","7","-2.33","7.64","2.55","2.9","1","5","1","0","0","[BRSTLTM, PAIGNTN, PLYMTH]","[MNCRPIC, BHAMNWS]"
+"2025","10","12","XC","1P","1","-0.67","-0.67","-0.67",,"1","0","0","0","0","[BRSTLTM]","[CRDFCEN]"
+"2025","10","12","XC","1S","8","-0.39","21.5","8.69","8.29","1","3","2","2","0","[BRSTLTM, PENZNCE, PLYMTH]","[LEEDS]"
+"2025","10","12","XC","1V","19","-0.33","11.72","1.84","3.0","4","13","2","0","0","[BHAMNWS, MNCRPIC, LEEDS]","[BRSTLTM, PENZNCE, PLYMTH]"
+"2025","10","13","GW","1A","32","-0.58","11.92","2.65","2.79","4","22","6","0","0","[TAUNTON, EXETRSD, PENZNCE, WSMARE, BRSTLTM]","[PADTON, RDNGSTN]"
+"2025","10","13","GW","1C","35","-2.12","29.0","3.46","6.78","8","20","4","3","0","[RDNGSTN, PADTON]","[WSMARE, BRSTLTM, PENZNCE, TAUNTON, SWANSEA]"
+"2025","10","13","GW","1F","35","-0.31","20.16","4.58","4.96","4","17","13","1","0","[FAREHAM, FROME, PHBR, WSTBRYW, BRSTLTM, CRDFCEN]","[SOTON, CRDFCEN, PHBR]"
+"2025","10","13","GW","1G","1","2.17","2.17","2.17",,"0","1","0","0","0","[PLYMTH]","[GLOSTER]"
+"2025","10","13","GW","1H","2","-1.1","-0.9","-1.0","0.14","2","0","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","13","GW","1J","1","-0.1","-0.1","-0.1",,"1","0","0","0","0","[CRDFCEN]","[FROME]"
+"2025","10","13","GW","1K","1","0.0","0.0","0.0",,"0","1","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","13","GW","2C","37","-2.21","19.67","1.88","4.34","12","20","4","1","0","[CRDFCEN, TAUNTON, BATHSPA, BRSTLTM, BRSTPWY, SEVTNLJ, GLOSTER]","[BRSTLTM, EXETRSD, OLDFLDP, WSTBRYW, TAUNTON, NWPTRTG, PENZNCE, FROME, PLYMTH]"
+"2025","10","13","GW","2D","2","0.5","1.25","0.88","0.53","0","2","0","0","0","[BRSTLTM]","[BRSTPWY]"
+"2025","10","13","GW","2E","23","-1.5","1.94","-0.15","0.93","15","8","0","0","0","[WSTBRYW, WRMNSTR, BRSTLTM]","[GTMLVRN, GLOSTER, WORCSSH, WORCSFS]"
+"2025","10","13","GW","2F","5","-0.05","2.63","1.34","1.03","1","4","0","0","0","[BRSTLTM]","[WRMNSTR, EXMOUTH]"
+"2025","10","13","GW","2H","23","-1.13","3.5","0.01","1.17","14","9","0","0","0","[FILTNEW, BRSTLTM]","[BRSTLTM, FILTNEW]"
+"2025","10","13","GW","2K","56","-1.0","3.73","0.32","1.13","35","21","0","0","0","[AVONMTH, CLFDOWN, SVRNBCH, BRSTLTM, WSMARE, TAUNTON]","[BRSTLTM, AVONMTH, CLFDOWN, SVRNBCH]"
+"2025","10","13","GW","2M","6","0.0","9.5","2.71","3.91","0","4","2","0","0","[WSMARE, TAUNTON, EXETRSD, BATHSPA]","[BRSTLTM, TAUNTON, BRDFDOA]"
+"2025","10","13","GW","2O","12","-0.75","4.55","1.3","1.53","3","9","0","0","0","[GLOSTER, BRSTLTM, SVRNBCH]","[WEYMTH, SLSBRY]"
+"2025","10","13","GW","2T","28","-0.88","6.33","0.94","2.02","15","10","3","0","0","[GLOSTER, CHLTNHM, WORCSSH, WSTBRYW, WORCSFS, BATHSPA, GTMLVRN, WRMNSTR, FROME]","[BRSTLTM]"
+"2025","10","13","GW","2U","17","-0.06","9.42","2.49","2.52","1","14","2","0","0","[BRSTLTM, EXMOUTH, PAIGNTN, TAUNTON, EXETRSD]","[CRDFCEN]"
+"2025","10","13","GW","2V","20","-0.75","18.25","4.35","6.08","6","9","2","3","0","[YOVILPM, WEYMTH, SOTON, FRATTON, SLSBRY]","[FILTNEW, GLOSTER, BRSTLTM]"
+"2025","10","13","GW","2Y","14","-0.66","1.92","0.07","0.68","8","6","0","0","0","[AVONMTH, SVRNBCH, BRSTLTM]","[WSMARE]"
+"2025","10","13","XC","1B","1","1.42","1.42","1.42",,"0","1","0","0","0","[PAIGNTN]","[BRSTLTM]"
+"2025","10","13","XC","1C","1","1.18","1.18","1.18",,"0","1","0","0","0","[BRSTLTM]","[PENZNCE]"
+"2025","10","13","XC","1E","3","0.45","1.28","0.74","0.46","0","3","0","0","0","[PLYMTH]","[NWCSTLE, LEEDS]"
+"2025","10","13","XC","1M","15","-0.39","3.19","1.14","0.97","1","14","0","0","0","[PAIGNTN, BRSTLTM, PENZNCE, PLYMTH]","[MNCRPIC, BHAMNWS]"
+"2025","10","13","XC","1P","1","-0.67","-0.67","-0.67",,"1","0","0","0","0","[BRSTLTM]","[CRDFCEN]"
+"2025","10","13","XC","1S","11","0.95","16.8","4.49","5.19","0","9","1","1","0","[PENZNCE, BRSTLTM, PLYMTH]","[GLGC, EDINBUR, DUNDETB]"
+"2025","10","13","XC","1V","29","-0.7","48.29","4.05","9.07","5","17","6","0","1","[YORK, GLGC, NWCSTLE, LEEDS, DRBY, ABRDEEN, BHAMNWS, MNCRPIC, EDINBUR]","[PLYMTH, PAIGNTN, PENZNCE, BRSTLTM]"
+"2025","10","14","GW","1A","33","-0.45","8.14","2.15","2.17","4","25","4","0","0","[PENZNCE, TAUNTON, WSMARE, BRSTLTM, EXETRSD]","[RDNGSTN, PADTON]"
+"2025","10","14","GW","1C","35","-1.0","12.64","1.74","3.0","8","23","4","0","0","[RDNGSTN, PADTON]","[BRSTLTM, BATHSPA, PENZNCE, TAUNTON, SWANSEA, WSMARE]"
+"2025","10","14","GW","1F","35","-1.5","27.31","5.74","6.79","5","16","10","4","0","[FAREHAM, CRDFCEN, BRSTLTM, PHBR, FROME, WSTBRYW]","[SOTON, PHBR, CRDFCEN]"
+"2025","10","14","GW","1G","1","2.97","2.97","2.97",,"0","1","0","0","0","[PLYMTH]","[GLOSTER]"
+"2025","10","14","GW","1H","1","-0.9","-0.9","-0.9",,"1","0","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","14","GW","1J","1","0.9","0.9","0.9",,"0","1","0","0","0","[CRDFCEN]","[FROME]"
+"2025","10","14","GW","1K","1","1.77","1.77","1.77",,"0","1","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","14","GW","1Z","1","16.0","16.0","16.0",,"0","0","0","1","0","[WSTBRYW]","[CRDFCEN]"
+"2025","10","14","GW","2C","37","-2.2","6.09","0.4","1.56","18","18","1","0","0","[SEVTNLJ, TAUNTON, BRSTPWY, GLOSTER, CRDFCEN, BRSTLTM, BATHSPA]","[BRSTLTM, PENZNCE, NWPTRTG, EXETRSD, FROME, PLYMTH, WSTBRYW, TAUNTON, OLDFLDP]"
+"2025","10","14","GW","2D","2","0.0","1.13","0.56","0.8","0","2","0","0","0","[BRSTLTM]","[BRSTPWY]"
+"2025","10","14","GW","2E","22","-1.38","18.3","2.35","4.9","7","12","2","1","0","[BRSTLTM, WSTBRYW]","[GLOSTER, WORCSSH, WORCSFS, GTMLVRN]"
+"2025","10","14","GW","2F","6","-0.33","13.74","2.51","5.53","3","2","1","0","0","[BRSTLTM]","[WRMNSTR, EXMOUTH]"
+"2025","10","14","GW","2H","26","-1.13","10.75","0.48","2.54","16","8","2","0","0","[FILTNEW, BRSTLTM]","[BRSTLTM, FILTNEW]"
+"2025","10","14","GW","2K","56","-1.13","4.55","0.63","1.35","19","37","0","0","0","[WSMARE, BRSTLTM, TAUNTON, SVRNBCH, CLFDOWN, AVONMTH]","[CLFDOWN, SVRNBCH, AVONMTH, BRSTLTM]"
+"2025","10","14","GW","2M","6","-0.3","4.21","1.13","1.88","3","3","0","0","0","[EXETRSD, TAUNTON, WSMARE, BATHSPA]","[TAUNTON, BRSTLTM, BRDFDOA]"
+"2025","10","14","GW","2O","12","-0.71","5.07","1.24","1.95","4","7","1","0","0","[SVRNBCH, BRSTLTM, GLOSTER]","[SLSBRY, WEYMTH]"
+"2025","10","14","GW","2T","28","-2.0","26.42","2.39","5.5","9","16","2","1","0","[WORCSSH, WRMNSTR, WSTBRYW, WORCSFS, GTMLVRN, GLOSTER, BATHSPA, FROME, CHLTNHM]","[BRSTLTM]"
+"2025","10","14","GW","2U","18","-0.52","9.54","1.9","2.58","6","11","1","0","0","[EXMOUTH, TAUNTON, EXETRSD, BRSTLTM, PAIGNTN]","[CRDFCEN]"
+"2025","10","14","GW","2V","20","-0.6","16.75","2.28","4.06","6","12","1","1","0","[YOVILPM, FRATTON, SOTON, SLSBRY, WEYMTH]","[FILTNEW, BRSTLTM, GLOSTER]"
+"2025","10","14","GW","2Y","14","-0.66","3.47","0.5","1.13","4","10","0","0","0","[BRSTLTM, AVONMTH, SVRNBCH]","[WSMARE]"
+"2025","10","14","GW","2Z","2","-0.45","1.38","0.46","1.29","1","1","0","0","0","[BRSTLTM]","[GLOSTER, TAUNTON]"
+"2025","10","14","XC","1B","1","0.17","0.17","0.17",,"0","1","0","0","0","[PAIGNTN]","[BRSTLTM]"
+"2025","10","14","XC","1C","1","-0.06","-0.06","-0.06",,"1","0","0","0","0","[BRSTLTM]","[PENZNCE]"
+"2025","10","14","XC","1E","3","-0.18","2.23","0.88","1.23","1","2","0","0","0","[PLYMTH]","[LEEDS, NWCSTLE]"
+"2025","10","14","XC","1M","15","-0.33","5.06","2.16","1.7","1","13","1","0","0","[PAIGNTN, BRSTLTM, PLYMTH, PENZNCE]","[MNCRPIC, BHAMNWS]"
+"2025","10","14","XC","1P","1","0.67","0.67","0.67",,"0","1","0","0","0","[BRSTLTM]","[CRDFCEN]"
+"2025","10","14","XC","1S","11","0.44","17.06","4.75","5.43","0","8","2","1","0","[PLYMTH, BRSTLTM, PENZNCE]","[DUNDETB, GLGC, EDINBUR]"
+"2025","10","14","XC","1V","30","-0.83","33.02","4.17","7.16","1","22","4","2","1","[BHAMNWS, MNCRPIC, YORK, EDINBUR, LEEDS, NWCSTLE, DRBY, ABRDEEN, GLGC]","[BRSTLTM, PAIGNTN, PLYMTH, PENZNCE]"
+"2025","10","15","GW","1A","33","-0.83","30.06","3.05","5.97","6","23","3","0","1","[EXETRSD, BRSTLTM, PENZNCE, TAUNTON, WSMARE]","[RDNGSTN, PADTON]"
+"2025","10","15","GW","1C","35","-0.92","61.88","8.44","17.42","11","14","4","2","4","[PADTON, RDNGSTN]","[TAUNTON, SWANSEA, BRSTLTM, BATHSPA, PENZNCE, WSMARE]"
+"2025","10","15","GW","1F","35","-0.38","24.38","4.46","6.16","5","20","7","3","0","[BRSTLTM, CRDFCEN, WSTBRYW, PHBR, FROME, FAREHAM]","[PHBR, CRDFCEN, SOTON]"
+"2025","10","15","GW","1G","1","9.73","9.73","9.73",,"0","0","1","0","0","[PLYMTH]","[GLOSTER]"
+"2025","10","15","GW","1H","1","-1.4","-1.4","-1.4",,"1","0","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","15","GW","1J","1","-0.4","-0.4","-0.4",,"1","0","0","0","0","[CRDFCEN]","[FROME]"
+"2025","10","15","GW","1K","1","2.42","2.42","2.42",,"0","1","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","15","GW","1L","1","13.27","13.27","13.27",,"0","0","1","0","0","[CMTHN]","[PADTON]"
+"2025","10","15","GW","1Z","1","2.5","2.5","2.5",,"0","1","0","0","0","[BRSTLTM]","[CRDFCEN]"
+"2025","10","15","GW","2C","37","-1.93","18.39","2.35","5.19","16","14","5","2","0","[CRDFCEN, BATHSPA, TAUNTON, SEVTNLJ, GLOSTER, BRSTLTM, BRSTPWY]","[PENZNCE, FROME, TAUNTON, OLDFLDP, BRSTLTM, PLYMTH, EXETRSD, NWPTRTG, WSTBRYW]"
+"2025","10","15","GW","2D","2","-0.38","2.25","0.94","1.86","1","1","0","0","0","[BRSTLTM]","[BRSTPWY]"
+"2025","10","15","GW","2E","22","-0.71","36.75","6.89","9.89","5","9","4","3","1","[WSTBRYW, WRMNSTR, BRSTLTM]","[GLOSTER, WORCSSH, WORCSFS, GTMLVRN]"
+"2025","10","15","GW","2F","5","-0.61","1.86","0.32","1.08","3","2","0","0","0","[BRSTLTM]","[EXMOUTH, WRMNSTR]"
+"2025","10","15","GW","2H","26","-1.0","18.63","1.15","4.02","15","9","1","1","0","[BRSTLTM, FILTNEW]","[FILTNEW, BRSTLTM]"
+"2025","10","15","GW","2K","56","-1.0","18.7","1.78","3.83","17","36","1","2","0","[BRSTLTM, WSMARE, TAUNTON, CLFDOWN, AVONMTH, SVRNBCH]","[AVONMTH, CLFDOWN, SVRNBCH, BRSTLTM]"
+"2025","10","15","GW","2M","4","-0.76","4.5","1.12","2.32","1","3","0","0","0","[TAUNTON, WSMARE, BATHSPA]","[BRSTLTM, BRDFDOA]"
+"2025","10","15","GW","2O","13","0.11","14.21","3.93","3.77","0","8","5","0","0","[SVRNBCH, GLOSTER, BRSTLTM]","[SLSBRY, WEYMTH]"
+"2025","10","15","GW","2T","28","-1.25","25.5","3.84","5.84","5","16","6","1","0","[BATHSPA, GTMLVRN, FROME, WRMNSTR, WSTBRYW, WORCSSH, WORCSFS, CHLTNHM, GLOSTER]","[BRSTLTM]"
+"2025","10","15","GW","2U","18","-0.8","10.82","2.51","3.62","4","11","3","0","0","[EXETRSD, TAUNTON, BRSTLTM, EXMOUTH, PAIGNTN]","[CRDFCEN]"
+"2025","10","15","GW","2V","19","-0.65","14.13","3.14","3.84","5","10","4","0","0","[SOTON, FRATTON, SLSBRY, WEYMTH, YOVILPM]","[BRSTLTM, GLOSTER, FILTNEW]"
+"2025","10","15","GW","2Y","14","-0.53","2.0","0.55","0.92","6","8","0","0","0","[SVRNBCH, BRSTLTM, AVONMTH]","[WSMARE]"
+"2025","10","15","XC","1B","1","0.33","0.33","0.33",,"0","1","0","0","0","[PAIGNTN]","[BRSTLTM]"
+"2025","10","15","XC","1C","1","0.44","0.44","0.44",,"0","1","0","0","0","[BRSTLTM]","[PENZNCE]"
+"2025","10","15","XC","1E","3","1.53","4.8","3.28","1.65","0","3","0","0","0","[PLYMTH]","[NWCSTLE, LEEDS]"
+"2025","10","15","XC","1M","15","0.11","32.5","6.8","9.3","0","9","4","1","1","[PENZNCE, PLYMTH, PAIGNTN, BRSTLTM]","[BHAMNWS, MNCRPIC]"
+"2025","10","15","XC","1P","1","0.5","0.5","0.5",,"0","1","0","0","0","[BRSTLTM]","[CRDFCEN]"
+"2025","10","15","XC","1S","11","0.28","26.73","5.34","8.12","0","8","2","1","0","[BRSTLTM, PENZNCE, PLYMTH]","[EDINBUR, GLGC, DUNDETB]"
+"2025","10","15","XC","1V","29","-0.33","39.81","6.21","9.44","1","19","6","1","2","[EDINBUR, BHAMNWS, MNCRPIC, YORK, ABRDEEN, DRBY, NWCSTLE, LEEDS, GLGC]","[PENZNCE, BRSTLTM, PAIGNTN, PLYMTH]"
+"2025","10","15","XC","1Z","1","14.6","14.6","14.6",,"0","0","1","0","0","[BHAMNWS]","[PLYMTH]"
+"2025","10","16","GW","1A","33","-0.59","11.21","2.43","2.63","4","25","4","0","0","[PENZNCE, EXETRSD, TAUNTON, WSMARE, BRSTLTM]","[PADTON, RDNGSTN]"
+"2025","10","16","GW","1C","35","-0.82","78.17","5.64","13.55","8","17","8","1","1","[RDNGSTN, PADTON]","[SWANSEA, WSMARE, BATHSPA, PENZNCE, TAUNTON, BRSTLTM]"
+"2025","10","16","GW","1F","35","-0.42","8.2","1.78","2.07","7","24","4","0","0","[FAREHAM, FROME, PHBR, WSTBRYW, BRSTLTM, CRDFCEN]","[SOTON, CRDFCEN, PHBR]"
+"2025","10","16","GW","1G","1","1.34","1.34","1.34",,"0","1","0","0","0","[PLYMTH]","[GLOSTER]"
+"2025","10","16","GW","1H","2","-0.5","3.3","1.4","2.69","1","1","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","16","GW","1J","1","1.32","1.32","1.32",,"0","1","0","0","0","[CRDFCEN]","[FROME]"
+"2025","10","16","GW","1K","1","1.5","1.5","1.5",,"0","1","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","16","GW","2C","36","-2.5","29.15","2.48","7.17","19","12","2","3","0","[SEVTNLJ, BRSTPWY, BRSTLTM, TAUNTON, GLOSTER, BATHSPA, CRDFCEN]","[NWPTRTG, PLYMTH, BRSTLTM, WSTBRYW, EXETRSD, FROME, TAUNTON, OLDFLDP, PENZNCE]"
+"2025","10","16","GW","2D","2","0.75","2.0","1.38","0.88","0","2","0","0","0","[BRSTLTM]","[BRSTPWY]"
+"2025","10","16","GW","2E","24","-1.25","19.06","1.82","4.72","9","12","2","1","0","[BRSTLTM, WRMNSTR, WSTBRYW]","[WORCSFS, GTMLVRN, GLOSTER, WORCSSH]"
+"2025","10","16","GW","2F","5","-0.42","1.2","0.31","0.62","1","4","0","0","0","[BRSTLTM]","[WRMNSTR, EXMOUTH]"
+"2025","10","16","GW","2H","26","-1.13","23.43","2.05","5.3","14","8","3","1","0","[FILTNEW, BRSTLTM]","[BRSTLTM, FILTNEW]"
+"2025","10","16","GW","2K","56","-0.69","17.33","4.16","4.85","7","31","16","2","0","[SVRNBCH, CLFDOWN, AVONMTH, BRSTLTM, TAUNTON, WSMARE]","[BRSTLTM, SVRNBCH, AVONMTH, CLFDOWN]"
+"2025","10","16","GW","2M","6","-0.46","1.14","0.19","0.53","2","4","0","0","0","[BATHSPA, EXETRSD, TAUNTON, WSMARE]","[BRDFDOA, TAUNTON, BRSTLTM]"
+"2025","10","16","GW","2O","14","-0.5","7.98","1.04","2.2","5","8","1","0","0","[BRSTLTM, SVRNBCH, GLOSTER]","[SLSBRY, WEYMTH]"
+"2025","10","16","GW","2T","29","-0.58","11.33","1.13","2.77","11","15","3","0","0","[GLOSTER, BATHSPA, WORCSFS, WSTBRYW, CHLTNHM, GTMLVRN, FROME, WRMNSTR, WORCSSH]","[BRSTLTM]"
+"2025","10","16","GW","2U","18","-1.0","26.96","4.56","8.4","4","10","2","2","0","[TAUNTON, PAIGNTN, EXETRSD, BRSTLTM, EXMOUTH]","[CRDFCEN]"
+"2025","10","16","GW","2V","21","-0.61","20.86","1.71","4.63","11","9","0","1","0","[SOTON, WEYMTH, FRATTON, SLSBRY, YOVILPM]","[GLOSTER, BRSTLTM, FILTNEW]"
+"2025","10","16","GW","2Y","14","-0.63","21.13","3.07","6.32","2","10","1","1","0","[SVRNBCH, BRSTLTM, AVONMTH]","[WSMARE]"
+"2025","10","16","GW","2Z","2","31.5","35.3","33.4","2.69","0","0","0","0","2","[BRSTLTM]","[GLOSTER, CRDFCEN]"
+"2025","10","16","XC","1C","1","0.12","0.12","0.12",,"0","1","0","0","0","[BRSTLTM]","[PENZNCE]"
+"2025","10","16","XC","1E","3","5.53","11.85","8.14","3.3","0","0","3","0","0","[PLYMTH]","[LEEDS, NWCSTLE]"
+"2025","10","16","XC","1M","15","-0.17","14.71","3.17","3.86","1","11","3","0","0","[PENZNCE, BRSTLTM, PLYMTH, PAIGNTN]","[BHAMNWS, MNCRPIC]"
+"2025","10","16","XC","1S","11","0.22","25.59","6.22","8.38","0","7","2","2","0","[PENZNCE, PLYMTH, BRSTLTM]","[DUNDETB, GLGC, EDINBUR]"
+"2025","10","16","XC","1V","29","-0.29","44.6","5.17","9.32","3","18","5","2","1","[BHAMNWS, MNCRPIC, NWCSTLE, GLGC, ABRDEEN, EDINBUR, LEEDS, YORK, DRBY]","[BRSTLTM, PAIGNTN, PLYMTH, PENZNCE]"
+"2025","10","17","GW","1A","24","-0.6","88.09","16.44","21.7","1","10","4","3","6","[PENZNCE, WSMARE, TAUNTON, BRSTLTM]","[PADTON]"
+"2025","10","17","GW","1C","24","-1.13","37.67","7.9","11.67","6","8","7","0","3","[RDNGSTN, PADTON]","[BATHSPA, PENZNCE, BRSTLTM, SWANSEA, WSMARE]"
+"2025","10","17","GW","1F","35","-0.74","19.1","4.4","5.16","5","17","11","2","0","[FAREHAM, WSTBRYW, FROME, PHBR, CRDFCEN, BRSTLTM]","[SOTON, CRDFCEN, PHBR]"
+"2025","10","17","GW","1G","1","17.8","17.8","17.8",,"0","0","0","1","0","[PLYMTH]","[GLOSTER]"
+"2025","10","17","GW","1H","1","3.3","3.3","3.3",,"0","1","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","17","GW","1J","1","0.95","0.95","0.95",,"0","1","0","0","0","[CRDFCEN]","[FROME]"
+"2025","10","17","GW","1K","1","0.65","0.65","0.65",,"0","1","0","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","17","GW","2C","38","-18.5","31.33","2.97","8.22","13","18","3","3","1","[PATCHWY, CRDFCEN, GLOSTER, YATTON, BRSTLTM, BRSTPWY, BATHSPA, TAUNTON]","[BRSTLTM, SEVTNLJ, PENZNCE, EXETRSD, NAILSEA, FROME, WSTBRYW, OLDFLDP, BRDGWTR, PLYMTH, TAUNTON]"
+"2025","10","17","GW","2D","2","-0.13","1.5","0.69","1.15","1","1","0","0","0","[BRSTLTM]","[BRSTPWY]"
+"2025","10","17","GW","2E","24","-1.67","19.39","1.99","4.8","10","12","1","1","0","[WSTBRYW, WRMNSTR, BRSTLTM]","[GLOSTER, GTMLVRN, WORCSSH, WORCSFS]"
+"2025","10","17","GW","2F","5","-0.21","28.53","6.68","12.46","3","0","1","1","0","[BRSTLTM]","[EXMOUTH, WRMNSTR]"
+"2025","10","17","GW","2H","26","-1.13","4.25","-0.03","1.15","17","9","0","0","0","[BRSTLTM, FILTNEW]","[FILTNEW, BRSTLTM]"
+"2025","10","17","GW","2K","56","-1.08","21.33","1.6","3.39","16","33","6","1","0","[CLFDOWN, AVONMTH, SVRNBCH, WSMARE, TAUNTON, BRSTLTM]","[CLFDOWN, BRSTLTM, SVRNBCH, AVONMTH]"
+"2025","10","17","GW","2M","6","-0.13","15.36","3.28","6.0","1","4","0","1","0","[EXETRSD, BATHSPA, WSMARE, PAIGNTN, TAUNTON]","[YATTON, BRDFDOA, BRSTLTM]"
+"2025","10","17","GW","2O","13","-0.6","27.0","6.09","10.35","2","8","0","3","0","[BRSTLTM, SVRNBCH, GLOSTER]","[SLSBRY, WEYMTH]"
+"2025","10","17","GW","2T","28","-0.88","20.38","2.36","4.7","10","14","3","1","0","[GLOSTER, WORCSFS, WORCSSH, GTMLVRN, CHLTNHM, WSTBRYW, WRMNSTR, FROME, BATHSPA]","[BRSTLTM]"
+"2025","10","17","GW","2U","18","-0.8","18.58","2.27","4.29","3","14","0","1","0","[BRSTLTM, EXMOUTH, EXETRSD, TAUNTON, PAIGNTN]","[CRDFCEN]"
+"2025","10","17","GW","2V","19","-0.68","29.69","4.52","8.56","5","10","2","2","0","[WEYMTH, FRATTON, SOTON, SLSBRY, YOVILPM]","[GLOSTER, BRSTLTM, FILTNEW]"
+"2025","10","17","GW","2Y","14","-0.54","3.14","0.91","1.46","6","8","0","0","0","[SVRNBCH, AVONMTH, BRSTLTM]","[WSMARE]"
+"2025","10","17","GW","2Z","1","-8.67","-8.67","-8.67",,"1","0","0","0","0","[WSTBRYW]","[CRDFCEN]"
+"2025","10","17","XC","1C","1","18.06","18.06","18.06",,"0","0","0","1","0","[BRSTLTM]","[PENZNCE]"
+"2025","10","17","XC","1E","3","1.79","35.37","14.83","18.0","0","1","1","0","1","[PLYMTH]","[NWCSTLE, LEEDS]"
+"2025","10","17","XC","1M","13","0.27","38.61","7.92","10.92","0","6","5","1","1","[PLYMTH, BRSTLTM, PAIGNTN]","[BHAMNWS, MNCRPIC]"
+"2025","10","17","XC","1P","1","-1.0","-1.0","-1.0",,"1","0","0","0","0","[BRSTLTM]","[CRDFCEN]"
+"2025","10","17","XC","1S","11","0.54","70.51","12.24","21.04","0","7","1","2","1","[PENZNCE, BRSTLTM, PLYMTH]","[EDINBUR, ABRDEEN, GLGC]"
+"2025","10","17","XC","1V","28","-0.3","30.05","6.73","8.05","1","16","7","2","2","[MNCRPIC, YORK, ABRDEEN, NWCSTLE, LEEDS, GLGC, DRBY, EDINBUR, BHAMNWS]","[BRSTLTM, PENZNCE, PLYMTH, PAIGNTN]"
+"2025","10","18","GW","1A","22","-1.0","6.6","1.15","1.84","7","14","1","0","0","[BRSTLTM]","[PADTON]"
+"2025","10","18","GW","1B","2","-0.4","1.3","0.45","1.2","1","1","0","0","0","[BRSTLTM]","[SWANSEA, CRDFCEN]"
+"2025","10","18","GW","1C","21","-2.11","14.0","1.05","3.39","11","9","1","0","0","[PADTON, BRSTLTM]","[BRSTLTM, PENZNCE]"
+"2025","10","18","GW","1F","20","-0.6","11.0","1.72","2.65","5","14","1","0","0","[PHBR, BRSTLTM, CRDFCEN]","[CRDFCEN, PHBR]"
+"2025","10","18","GW","2C","16","-1.27","0.57","-0.55","0.56","12","4","0","0","0","[CRDFCEN, GLOSTER, BRSTLTM]","[BRSTLTM, FROME, WSTBRYW]"
+"2025","10","18","GW","2E","15","-1.67","3.53","0.05","1.33","9","6","0","0","0","[WSTBRYW, WRMNSTR, BRSTLTM]","[GLOSTER, WORCSSH, WORCSFS]"
+"2025","10","18","GW","2F","1","0.76","0.76","0.76",,"0","1","0","0","0","[BRSTLTM]","[WRMNSTR]"
+"2025","10","18","GW","2K","34","-1.1","3.15","-0.21","0.72","26","8","0","0","0","[BRSTLTM, SVRNBCH]","[AVONMTH, SVRNBCH, BRSTLTM]"
+"2025","10","18","GW","2O","12","-1.0","27.17","3.15","7.89","5","5","1","1","0","[CHLTNHM, GLOSTER, BRSTLTM]","[WEYMTH, SLSBRY]"
+"2025","10","18","GW","2T","14","-1.0","37.0","2.67","9.9","8","5","0","0","1","[FROME, WSTBRYW, WORCSFS, GLOSTER, GTMLVRN]","[BRSTLTM]"
+"2025","10","18","GW","2U","11","-0.87","0.17","-0.31","0.36","7","4","0","0","0","[BRSTLTM]","[CRDFCEN]"
+"2025","10","18","GW","2V","13","-0.63","13.22","2.52","4.25","6","4","3","0","0","[WEYMTH, SLSBRY, PSEA, SOTON]","[GLOSTER, WORCSFS, BRSTLTM]"
+"2025","10","18","GW","2Y","10","-0.5","1.0","-0.13","0.45","7","3","0","0","0","[SVRNBCH, AVONMTH, BRSTPWY]","[BRSTLTM]"
+"2025","10","18","XC","1M","2","3.83","5.0","4.42","0.82","0","1","1","0","0","[BRSTLTM]","[BHAMNWS, MNCRPIC]"
+"2025","10","18","XC","1S","2","-0.07","1.0","0.46","0.76","1","1","0","0","0","[BRSTLTM]","[LEEDS, BHAMNWS]"
+"2025","10","18","XC","1V","4","-1.0","12.33","3.71","5.97","1","2","1","0","0","[LEEDS, BHAMNWS, MNCRPIC]","[BRSTLTM]"
+`;
+
+        function parseCSV(csv) {
+            const lines = csv.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.replace(/"/g, ''));
+
+            return lines.slice(1).map(line => {
+                const values = [];
+                let current = '';
+                let inQuotes = false;
+
+                for (let char of line) {
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        values.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                values.push(current.trim());
+
+                const obj = {};
+                headers.forEach((header, i) => {
+                    obj[header] = values[i] || '';
+                });
+                return obj;
+            });
+        }
+
+        const data = parseCSV(csvData);
+
+        // Aggregate by TOC
+        const tocData = {};
+        data.forEach(row => {
+            const toc = row.toc;
+            if (!tocData[toc]) {
+                tocData[toc] = {
+                    totalServices: 0,
+                    totalDelay: 0,
+                    earlyServices: 0,
+                    onTimeServices: 0,
+                    delayed5_15: 0,
+                    delayed15_30: 0,
+                    delayed30plus: 0
+                };
+            }
+
+            const numServices = parseInt(row.num_services) || 0;
+            const avgDelay = parseFloat(row.avg_delay_minutes) || 0;
+
+            tocData[toc].totalServices += numServices;
+            tocData[toc].totalDelay += avgDelay * numServices;
+            tocData[toc].earlyServices += parseInt(row.early_services || 0);
+            tocData[toc].onTimeServices += parseInt(row['on_time_0_5min'] || 0);
+            tocData[toc].delayed5_15 += parseInt(row.delayed_5_15min || 0);
+            tocData[toc].delayed15_30 += parseInt(row.delayed_15_30min || 0);
+            tocData[toc].delayed30plus += parseInt(row.delayed_30plus_min || 0);
+        });
+
+        const tocs = Object.keys(tocData).sort();
+        const avgDelays = tocs.map(toc => {
+            const d = tocData[toc];
+            return d.totalServices > 0 ? d.totalDelay / d.totalServices : 0;
+        });
+
+        // Calculate punctuality percentages
+        const earlyPct = tocs.map(toc => {
+            const d = tocData[toc];
+            return d.totalServices > 0 ? (d.earlyServices / d.totalServices) * 100 : 0;
+        });
+        const onTimePct = tocs.map(toc => {
+            const d = tocData[toc];
+            return d.totalServices > 0 ? (d.onTimeServices / d.totalServices) * 100 : 0;
+        });
+        const delayed5_15Pct = tocs.map(toc => {
+            const d = tocData[toc];
+            return d.totalServices > 0 ? (d.delayed5_15 / d.totalServices) * 100 : 0;
+        });
+        const delayed15_30Pct = tocs.map(toc => {
+            const d = tocData[toc];
+            return d.totalServices > 0 ? (d.delayed15_30 / d.totalServices) * 100 : 0;
+        });
+        const delayed30plusPct = tocs.map(toc => {
+            const d = tocData[toc];
+            return d.totalServices > 0 ? (d.delayed30plus / d.totalServices) * 100 : 0;
+        });
+
+        // Average delay chart
+        const ctx1 = document.getElementById('tocAvgDelayChart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: tocs,
+                datasets: [{
+                    label: 'Average Delay (minutes)',
+                    data: avgDelays,
+                    backgroundColor: ['#FF9800', '#2196F3'],
+                    borderColor: ['#F57C00', '#1976D2'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Average Delay by Train Operating Company',
+                        font: { size: 16, weight: 'bold' }
+                    },
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Average Delay (minutes)'
+                        },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Punctuality stacked bar chart
+        const ctx2 = document.getElementById('tocPunctualityChart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: tocs,
+                datasets: [{
+                    label: 'Early',
+                    data: earlyPct,
+                    backgroundColor: '#4CAF50'
+                }, {
+                    label: 'On Time (0-5min)',
+                    data: onTimePct,
+                    backgroundColor: '#8BC34A'
+                }, {
+                    label: 'Delayed 5-15min',
+                    data: delayed5_15Pct,
+                    backgroundColor: '#FFC107'
+                }, {
+                    label: 'Delayed 15-30min',
+                    data: delayed15_30Pct,
+                    backgroundColor: '#FF9800'
+                }, {
+                    label: 'Delayed 30+ min',
+                    data: delayed30plusPct,
+                    backgroundColor: '#F44336'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Service Punctuality Distribution by TOC',
+                        font: { size: 16, weight: 'bold' }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + '%';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true
+                    },
+                    y: {
+                        stacked: true,
+                        title: {
+                            display: true,
+                            text: 'Percentage of Services (%)'
+                        },
+                        max: 100
+                    }
+                }
+            }
+        });
+
+        // Service volume
+        const ctx3 = document.getElementById('tocServiceVolumeChart').getContext('2d');
+        new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: tocs,
+                datasets: [{
+                    label: 'Total Services',
+                    data: tocs.map(toc => tocData[toc].totalServices),
+                    backgroundColor: ['#FF9800', '#2196F3'],
+                    borderColor: ['#F57C00', '#1976D2'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Total Services by TOC',
+                        font: { size: 16, weight: 'bold' }
+                    },
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Number of Services'
+                        },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

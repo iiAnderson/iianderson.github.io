@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UK Rail Cancellation Hotspots 2026</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: #f5f4f0;
+      color: #1a1a1a;
+    }
+
+    /* ── Header ─────────────────────────────────────────────── */
+    header {
+      padding: 22px 24px 16px;
+      border-bottom: 1px solid #e0ddd6;
+      background: #fff;
+    }
+    header h1 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: #111;
+    }
+    header p {
+      margin-top: 4px;
+      font-size: 13px;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    /* ── Three-panel grid ───────────────────────────────────── */
+    .panels {
+      display: grid;
+      grid-template-columns: 5fr 2fr 3fr;
+      gap: 12px;
+      padding: 12px;
+    }
+
+    .panel {
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.10), 0 0 0 1px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      padding: 11px 14px 9px;
+      border-bottom: 1px solid #eee;
+    }
+    .panel-header h2 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #111;
+      letter-spacing: -0.1px;
+    }
+    .panel-header p {
+      font-size: 11px;
+      color: #888;
+      margin-top: 1px;
+    }
+
+    .map-container {
+      position: relative;
+    }
+    .map {
+      width: 100%;
+      height: 430px;
+    }
+
+    /* ── Legend ─────────────────────────────────────────────── */
+    footer {
+      padding: 12px 24px 14px;
+      background: #fff;
+      border-top: 1px solid #e0ddd6;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .legend-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .legend-label {
+      font-size: 11px;
+      color: #666;
+      white-space: nowrap;
+    }
+    .legend-gradient {
+      width: 140px;
+      height: 10px;
+      border-radius: 5px;
+      background: linear-gradient(to right, #4caf50, #ff9800, #f44336);
+    }
+    .legend-gradient-labels {
+      display: flex;
+      justify-content: space-between;
+      width: 140px;
+      font-size: 10px;
+      color: #888;
+      margin-top: 2px;
+    }
+    .legend-sizes {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .size-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: #666;
+    }
+
+    .data-note {
+      font-size: 11px;
+      color: #aaa;
+      margin-left: auto;
+    }
+
+    /* ── Leaflet tooltip overrides ──────────────────────────── */
+    .leaflet-tooltip {
+      background: rgba(255,255,255,0.92);
+      border: none;
+      border-radius: 3px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      color: #222;
+      padding: 3px 6px;
+      white-space: nowrap;
+    }
+    .leaflet-tooltip::before { display: none; }
+
+    /* ── Popup overrides ────────────────────────────────────── */
+    .leaflet-popup-content-wrapper {
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      padding: 0;
+    }
+    .leaflet-popup-content { margin: 0; width: 220px !important; }
+    .leaflet-popup-tip { background: #fff; }
+
+    .popup-inner { padding: 14px 16px 12px; }
+    .popup-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #111;
+      line-height: 1.3;
+    }
+    .popup-crs {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      color: #fff;
+      background: #555;
+      border-radius: 3px;
+      padding: 1px 5px;
+      letter-spacing: 0.5px;
+    }
+    .popup-pct {
+      font-size: 28px;
+      font-weight: 800;
+      margin: 8px 0 0;
+      line-height: 1;
+    }
+    .popup-pct-sub {
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 10px;
+    }
+    .popup-divider {
+      height: 1px;
+      background: #f0f0f0;
+      margin: 8px 0;
+    }
+    .popup-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      padding: 2px 0;
+    }
+    .popup-row-label { color: #888; }
+    .popup-row-value { font-weight: 600; color: #333; }
+    .popup-bar-wrap { margin-top: 8px; }
+    .popup-bar {
+      height: 5px;
+      border-radius: 3px;
+      display: flex;
+      overflow: hidden;
+      gap: 1px;
+      margin-top: 5px;
+    }
+    .popup-bar-legend {
+      display: flex;
+      gap: 10px;
+      margin-top: 5px;
+      font-size: 10px;
+      color: #888;
+    }
+    .swatch {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      vertical-align: middle;
+      margin-right: 2px;
+    }
+
+    /* ── Responsive ─────────────────────────────────────────── */
+    @media (max-width: 700px) {
+      .panels { grid-template-columns: 1fr; }
+      .map { height: 300px; }
+      .data-note { margin-left: 0; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>UK Rail Cancellation Hotspots &mdash; 2026 Year to Date</h1>
+  <p>Stations with the highest passenger service cancellation rates, Jan&ndash;Feb 2026. Circle size reflects scheduled services; colour reflects cancellation rate.</p>
+</header>
+
+<div class="panels">
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Devon &amp; Cornwall</h2>
+      <p>Tarka Line &middot; Atlantic Coast &middot; Looe Valley</p>
+    </div>
+    <div class="map-container"><div id="map-sw" class="map"></div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Surrey Hills</h2>
+      <p>Horsham line</p>
+    </div>
+    <div class="map-container"><div id="map-surrey" class="map"></div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h2>Scottish Highlands</h2>
+      <p>Far North Line</p>
+    </div>
+    <div class="map-container"><div id="map-scotland" class="map"></div></div>
+  </div>
+</div>
+
+<footer>
+  <div>
+    <div class="legend-section">
+      <span class="legend-label">Lower</span>
+      <div>
+        <div class="legend-gradient"></div>
+        <div class="legend-gradient-labels"><span>10%</span><span>25%</span><span>40%</span></div>
+      </div>
+      <span class="legend-label">Cancellation rate &nbsp;Higher</span>
+    </div>
+  </div>
+  <div class="legend-sizes">
+    <div class="size-item">
+      <svg width="14" height="14"><circle cx="7" cy="7" r="4" fill="#aaa" opacity="0.7"/></svg>
+      Fewer services
+    </div>
+    <div class="size-item">
+      <svg width="22" height="22"><circle cx="11" cy="11" r="9" fill="#aaa" opacity="0.7"/></svg>
+      More services
+    </div>
+  </div>
+  <span class="data-note">Passenger services only &nbsp;&bull;&nbsp; Source: Darwin Push Port &nbsp;&bull;&nbsp; Data to 20 Feb 2026</span>
+</footer>
+
+<script>
+// ── Station data ──────────────────────────────────────────────────────────────
+const stations = [
+  // Devon & Cornwall
+  { crs:'SKN', name:'St Keyne Wishing Well Halt', E:225102, N:61032,  total:149,  cancelled:56,  full:56,  partial:0,   pct:37.6, panel:'sw' },
+  { crs:'CAU', name:'Causeland',                  E:224830, N:59110,  total:149,  cancelled:56,  full:56,  partial:0,   pct:37.6, panel:'sw' },
+  { crs:'KGN', name:'Kings Nympton',              E:266212, N:116910, total:507,  cancelled:112, full:42,  partial:70,  pct:22.1, panel:'sw' },
+  { crs:'MRD', name:'Morchard Road',              E:275000, N:105100, total:1231, cancelled:262, full:91,  partial:171, pct:21.3, panel:'sw' },
+  { crs:'COP', name:'Copplestone',                E:276700, N:103120, total:1251, cancelled:265, full:94,  partial:171, pct:21.2, panel:'sw' },
+  { crs:'YEO', name:'Yeoford',                    E:278325, N:98905,  total:1266, cancelled:269, full:98,  partial:171, pct:21.2, panel:'sw' },
+  { crs:'UMB', name:'Umberleigh',                 E:260950, N:123800, total:1274, cancelled:268, full:97,  partial:171, pct:21.0, panel:'sw' },
+  { crs:'EGG', name:'Eggesford',                  E:268230, N:111480, total:1305, cancelled:269, full:99,  partial:170, pct:20.6, panel:'sw' },
+  { crs:'LAP', name:'Lapford',                    E:272655, N:107950, total:551,  cancelled:101, full:29,  partial:72,  pct:18.3, panel:'sw' },
+  { crs:'CPN', name:'Chapelton',                  E:258075, N:126080, total:217,  cancelled:37,  full:16,  partial:21,  pct:17.1, panel:'sw' },
+  { crs:'PMA', name:'Portsmouth Arms',            E:263100, N:119320, total:255,  cancelled:43,  full:20,  partial:23,  pct:16.9, panel:'sw' },
+  { crs:'NQY', name:'Newquay',                    E:181590, N:61770,  total:648,  cancelled:112, full:104, partial:8,   pct:17.3, panel:'sw' },
+  { crs:'LUX', name:'Luxulyan',                   E:204805, N:58070,  total:599,  cancelled:103, full:93,  partial:10,  pct:17.2, panel:'sw' },
+  { crs:'BGL', name:'Bugle',                      E:201670, N:59335,  total:624,  cancelled:106, full:96,  partial:10,  pct:17.0, panel:'sw' },
+  { crs:'ROC', name:'Roche',                      E:199040, N:61460,  total:624,  cancelled:105, full:96,  partial:9,   pct:16.8, panel:'sw' },
+  { crs:'QUI', name:'Quintrell Downs',            E:184890, N:60405,  total:624,  cancelled:104, full:96,  partial:8,   pct:16.7, panel:'sw' },
+  { crs:'SCR', name:'St Columb Road',             E:191100, N:59560,  total:624,  cancelled:104, full:96,  partial:8,   pct:16.7, panel:'sw' },
+  { crs:'SDP', name:'Sandplace',                  E:224900, N:57000,  total:584,  cancelled:78,  full:78,  partial:0,   pct:13.4, panel:'sw' },
+  { crs:'LOO', name:'Looe',                       E:225390, N:53920,  total:720,  cancelled:95,  full:95,  partial:0,   pct:13.2, panel:'sw' },
+  // Surrey Hills
+  { crs:'OLY', name:'Ockley',                     E:516477, N:140455, total:1229, cancelled:250, full:31,  partial:219, pct:20.3, panel:'surrey' },
+  { crs:'HLM', name:'Holmwood',                   E:517465, N:143780, total:1237, cancelled:226, full:7,   partial:219, pct:18.3, panel:'surrey' },
+  { crs:'WNH', name:'Warnham',                    E:517083, N:133948, total:1237, cancelled:226, full:7,   partial:219, pct:18.3, panel:'surrey' },
+  // Scottish Highlands
+  { crs:'THS', name:'Thurso',                     E:311300, N:967920, total:310,  cancelled:51,  full:21,  partial:30,  pct:16.5, panel:'scotland' },
+  { crs:'GGJ', name:'Georgemas Junction',         E:315500, N:959300, total:310,  cancelled:47,  full:21,  partial:26,  pct:15.2, panel:'scotland' },
+  { crs:'SCT', name:'Scotscalder',                E:309600, N:956020, total:273,  cancelled:34,  full:20,  partial:14,  pct:12.5, panel:'scotland' },
+  { crs:'ABC', name:'Altnabreac',                 E:300340, N:945680, total:273,  cancelled:34,  full:20,  partial:14,  pct:12.5, panel:'scotland' },
+  { crs:'KBC', name:'Kinbrace',                   E:286190, N:931600, total:273,  cancelled:34,  full:20,  partial:14,  pct:12.5, panel:'scotland' },
+  { crs:'FRS', name:'Forsinard',                  E:289100, N:942500, total:310,  cancelled:38,  full:21,  partial:17,  pct:12.3, panel:'scotland' },
+  { crs:'KIL', name:'Kildonan',                   E:290150, N:921740, total:310,  cancelled:38,  full:21,  partial:17,  pct:12.3, panel:'scotland' },
+  { crs:'WCK', name:'Wick',                       E:336065, N:950885, total:310,  cancelled:37,  full:21,  partial:16,  pct:11.9, panel:'scotland' },
+];
+
+// ── BNG → WGS84 ──────────────────────────────────────────────────────────────
+function bngToLatLng(E, N) {
+  const a = 6377563.396, b = 6356256.909, F0 = 0.9996012717;
+  const lat0 = 49*Math.PI/180, lon0 = -2*Math.PI/180, N0 = -100000, E0 = 400000;
+  const e2 = 1-(b*b)/(a*a), n = (a-b)/(a+b), n2 = n*n, n3 = n*n*n;
+  let lat = lat0, M = 0;
+  do {
+    lat = (N-N0-M)/(a*F0)+lat;
+    M = b*F0*(
+      (1+n+1.25*n2+1.25*n3)*(lat-lat0)
+      -(3*n+3*n2+2.625*n3)*Math.sin(lat-lat0)*Math.cos(lat+lat0)
+      +(1.875*n2+1.875*n3)*Math.sin(2*(lat-lat0))*Math.cos(2*(lat+lat0))
+      -(35/24)*n3*Math.sin(3*(lat-lat0))*Math.cos(3*(lat+lat0)));
+  } while (Math.abs(N-N0-M)>=1e-5);
+  const sinL=Math.sin(lat),cosL=Math.cos(lat),tanL=Math.tan(lat);
+  const nu=a*F0/Math.sqrt(1-e2*sinL*sinL), rho=a*F0*(1-e2)/Math.pow(1-e2*sinL*sinL,1.5);
+  const eta2=nu/rho-1, t2=tanL*tanL, t4=t2*t2, sec=1/cosL, dE=E-E0;
+  const latR = lat
+    -(tanL/(2*rho*nu))*dE*dE
+    +(tanL/(24*rho*nu*nu*nu))*(5+3*t2+eta2-9*t2*eta2)*Math.pow(dE,4)
+    -(tanL/(720*rho*Math.pow(nu,5)))*(61+90*t2+45*t4)*Math.pow(dE,6);
+  const lonR = lon0
+    +(sec/nu)*dE
+    -(sec/(6*nu*nu*nu))*(nu/rho+2*t2)*Math.pow(dE,3)
+    +(sec/(120*Math.pow(nu,5)))*(5+28*t2+24*t4)*Math.pow(dE,5)
+    -(sec/(5040*Math.pow(nu,7)))*(61+662*t2+1320*t4+720*t2*t4)*Math.pow(dE,7);
+  return [latR*180/Math.PI, lonR*180/Math.PI];
+}
+
+// ── Colour: green → amber → red (fixed scale 10–40%) ─────────────────────────
+const PCT_MIN = 10, PCT_MAX = 40;
+function lerp(a, b, t) { return a + (b-a)*t; }
+function pctToColor(pct) {
+  const t = Math.max(0, Math.min(1, (pct-PCT_MIN)/(PCT_MAX-PCT_MIN)));
+  const r = t < 0.5
+    ? [lerp(76,255,t*2), lerp(175,152,t*2), lerp(80,0,t*2)]
+    : [lerp(255,244,t*2-1), lerp(152,67,t*2-1), lerp(0,54,t*2-1)];
+  return `rgb(${Math.round(r[0])},${Math.round(r[1])},${Math.round(r[2])})`;
+}
+
+// ── Size: log scale on total_services ─────────────────────────────────────────
+const allTotals = stations.map(s=>s.total);
+const logMin = Math.log(Math.min(...allTotals)), logMax = Math.log(Math.max(...allTotals));
+function pctToRadius(total) {
+  return 5 + ((Math.log(total)-logMin)/(logMax-logMin)) * 13;
+}
+
+// ── Tile layer factory ────────────────────────────────────────────────────────
+function makeTiles() {
+  return L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+    maxZoom: 18,
+  });
+}
+
+// ── Build a map panel ─────────────────────────────────────────────────────────
+function buildMap(divId, panelKey, paddingPx) {
+  const map = L.map(divId, { zoomControl: false, attributionControl: false });
+  makeTiles().addTo(map);
+  L.control.attribution({ position: 'bottomright', prefix: false }).addTo(map);
+
+  const panelStations = stations.filter(s => s.panel === panelKey);
+  const bounds = [];
+
+  for (const s of panelStations) {
+    const [lat, lng] = bngToLatLng(s.E, s.N);
+    const color = pctToColor(s.pct);
+    const radius = pctToRadius(s.total);
+    const ran = s.total - s.cancelled;
+
+    const marker = L.circleMarker([lat, lng], {
+      radius,
+      fillColor: color,
+      color: '#fff',
+      weight: 2,
+      opacity: 1,
+      fillOpacity: 0.85,
+    }).addTo(map);
+
+    // Permanent label
+    marker.bindTooltip(s.name, {
+      permanent: true,
+      direction: 'right',
+      offset: [radius + 2, 0],
+      className: '',
+    });
+
+    // Click popup
+    const fullW  = Math.round(s.full    / s.total * 100);
+    const partW  = Math.round(s.partial / s.total * 100);
+    const ranW   = Math.max(0, 100 - fullW - partW);
+    marker.bindPopup(`
+      <div class="popup-inner">
+        <div class="popup-name">${s.name}</div>
+        <span class="popup-crs">${s.crs}</span>
+        <div class="popup-pct" style="color:${color}">${s.pct}%</div>
+        <div class="popup-pct-sub">cancellation rate</div>
+        <div class="popup-divider"></div>
+        <div class="popup-row">
+          <span class="popup-row-label">Scheduled stops</span>
+          <span class="popup-row-value">${s.total.toLocaleString()}</span>
+        </div>
+        <div class="popup-row">
+          <span class="popup-row-label">Cancelled</span>
+          <span class="popup-row-value">${s.cancelled.toLocaleString()}</span>
+        </div>
+        <div class="popup-bar-wrap">
+          <div class="popup-bar">
+            <div style="flex:${fullW};background:#f44336"></div>
+            <div style="flex:${partW};background:#ff9800"></div>
+            <div style="flex:${ranW};background:#4caf50"></div>
+          </div>
+          <div class="popup-bar-legend">
+            <span><span class="swatch" style="background:#f44336"></span>Full (${s.full})</span>
+            <span><span class="swatch" style="background:#ff9800"></span>Partial (${s.partial})</span>
+            <span><span class="swatch" style="background:#4caf50"></span>Ran (${ran})</span>
+          </div>
+        </div>
+      </div>`, { maxWidth: 240 });
+
+    bounds.push([lat, lng]);
+  }
+
+  map.fitBounds(L.latLngBounds(bounds), { padding: [paddingPx, paddingPx] });
+  return map;
+}
+
+// ── Initialise all three panels ───────────────────────────────────────────────
+buildMap('map-sw',      'sw',      40);
+buildMap('map-surrey',  'surrey',  60);
+buildMap('map-scotland','scotland', 36);
+</script>
+</body>
+</html>

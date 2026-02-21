@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Top 10 Cancellation Reasons — Bristol Temple Meads, December</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 24px;
+    }
+
+    .container {
+      width: 680px;
+    }
+
+    h2 {
+      font-size: 17px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 6px;
+      letter-spacing: -0.2px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead tr {
+      border-bottom: 2px solid #1a1a1a;
+    }
+
+    thead th {
+      text-align: left;
+      padding: 8px 12px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #555;
+    }
+
+    thead th.num {
+      text-align: right;
+      width: 80px;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #ebebeb;
+      transition: background 0.1s;
+    }
+
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    tbody tr:nth-child(1) td.bar-cell .bar {
+      background: #c0392b;
+    }
+
+    tbody tr:nth-child(2) td.bar-cell .bar,
+    tbody tr:nth-child(3) td.bar-cell .bar {
+      background: #e67e22;
+    }
+
+    tbody td {
+      padding: 10px 12px;
+      color: #1a1a1a;
+      vertical-align: middle;
+    }
+
+    tbody td.count {
+      text-align: right;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      width: 60px;
+      color: #1a1a1a;
+    }
+
+    .bar-cell {
+      width: 120px;
+      padding-left: 8px;
+    }
+
+    .bar {
+      height: 8px;
+      border-radius: 4px;
+      background: #aaa;
+    }
+
+    .source {
+      margin-top: 14px;
+      font-size: 11px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Top 10 Cancellation Reasons</h2>
+    <div class="subtitle">Bristol Temple Meads &mdash; December 2025 &nbsp;|&nbsp; Total cancellations: 382</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Reason</th>
+          <th class="num">Count</th>
+          <th class="bar-cell"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Shortage of train crew</td>
+          <td class="count">145</td>
+          <td class="bar-cell"><div class="bar" style="width:100%; background:#c0392b;"></div></td>
+        </tr>
+        <tr>
+          <td>More trains than usual needing repairs</td>
+          <td class="count">72</td>
+          <td class="bar-cell"><div class="bar" style="width:50%; background:#e67e22;"></div></td>
+        </tr>
+        <tr>
+          <td>Shortage of train drivers</td>
+          <td class="count">67</td>
+          <td class="bar-cell"><div class="bar" style="width:46%; background:#e67e22;"></div></td>
+        </tr>
+        <tr>
+          <td>Fault on this train</td>
+          <td class="count">21</td>
+          <td class="bar-cell"><div class="bar" style="width:14%;"></div></td>
+        </tr>
+        <tr>
+          <td>Severe weather</td>
+          <td class="count">20</td>
+          <td class="bar-cell"><div class="bar" style="width:14%;"></div></td>
+        </tr>
+        <tr>
+          <td>Fault with the signalling system</td>
+          <td class="count">16</td>
+          <td class="bar-cell"><div class="bar" style="width:11%;"></div></td>
+        </tr>
+        <tr>
+          <td>Broken down train</td>
+          <td class="count">13</td>
+          <td class="bar-cell"><div class="bar" style="width:9%;"></div></td>
+        </tr>
+        <tr>
+          <td>Points failure</td>
+          <td class="count">12</td>
+          <td class="bar-cell"><div class="bar" style="width:8%;"></div></td>
+        </tr>
+        <tr>
+          <td>Emergency services dealing with an incident</td>
+          <td class="count">9</td>
+          <td class="bar-cell"><div class="bar" style="width:6%;"></div></td>
+        </tr>
+        <tr>
+          <td>Train crew delayed by service disruption</td>
+          <td class="count">7</td>
+          <td class="bar-cell"><div class="bar" style="width:5%;"></div></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="source">Source: National Rail Darwin data</div>
+  </div>
+</body>
+</html>
