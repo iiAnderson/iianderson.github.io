@@ -29,6 +29,7 @@ With that, we have our query! You can see it in the appendix below. Now, onto th
 ## Results
 
 Here are the top thirty results, ordered by cancellation rate - the percentage of scheduled services that were cancelled.
+
 | # | Station | Total Services | Cancelled | Full | Partial | Rate |
 |---|---------|---------------|-----------|------|---------|------|
 | 1 | St Keyne Wishing Well Halt | 149 | 56 | 56 | 0 | 37.6% |
@@ -64,7 +65,8 @@ Here are the top thirty results, ordered by cancellation rate - the percentage o
 
 Note: Partially cancelled services are classed by a train stopping at the marked station, but not completing it's entire route. 
 
-Unless you're a real rail nut (or a local) I'd guess you've not heard of quite a few of these stations. That's because they cluster around four lines:
+Unless you're a real rail nut (or a local) I'd guess you've not heard of quite a few of these stations. That's because they cluster around five lines:
+- **Tarka line** (Cornwall, Exeter to Barnstaple)
 - **Looe Valley line** (Cornwall, to Looe)
 - **Atlantic Coast line** (Cornwall, to Newquay)
 - **Far North line** (Scotland, to Thurso and Wick)
@@ -76,13 +78,15 @@ The Far North line tells a different story: as far as I can tell it hasn't faced
 
 We can see these stations visualised below:
 
-<iframe src="/assets/visualizations/top-cancellations-uk-2026.html" width="100%" height="950" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;"></iframe>
+<iframe src="/assets/visualizations/top-cancellations-uk-2026.html" width="100%" height="650" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;"></iframe>
 
 ## Results: A bigger picture
 
 Now we can run more efficient queries, why limit ourselves to 30 stations! Let's generate a visualisation across the entire UK.
 
 <iframe src="/assets/visualizations/all-cancellations-uk-2026.html" width="100%" height="950" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;"></iframe>
+
+From this, we can see our top 5 delayed routes clearly - orange in a sea of green! We can also see other lines which struggle with cancellations, such as the stunning Heart of Wales line. You'll also notice that switching to "Number Cancelled" shows a very different picture, with most lines having some level of cancelled services - with only the lines north of Ipswich excelling in minimising the services cancelled.
 
 In future articles, I will look further back in cancellations, and see what patterns we can uncover.
 
