@@ -89,7 +89,7 @@ Now we can run more efficient queries, why limit ourselves to 30 stations! Let's
 
 <iframe src="/assets/visualizations/all-cancellations-uk-2026.html" width="100%" height="950" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;"></iframe>
 
-From this, we can see our top 5 cancelled lines clearly - orange in a sea of green! We can also see other lines which struggle with cancellations, such as the stunning Heart of Wales line. Switching from percentage cancelled to absolute number cancelled reveals a very different story. High-frequency urban corridors, while operationally more resilient, generate far larger absolute cancellation numbers simply because they run far more trains. Only the lines north of Ipswich excelling in minimising the services cancelled.
+From this, we can see our top 5 cancelled lines clearly - orange in a sea of green! We can also see other lines which struggle with cancellations, such as the stunning Heart of Wales line. Switching from percentage cancelled to absolute number cancelled reveals a very different story. High-frequency urban corridors, while operationally more resilient, generate far larger absolute cancellation numbers simply because they run far more trains. Only the lines north of Ipswich excelled in minimising the services cancelled.
 
 Cancellation percentages alone don’t tell the whole story. Rural lines dominate the league table, but major commuter corridors account for far more cancelled journeys in absolute terms.
 
