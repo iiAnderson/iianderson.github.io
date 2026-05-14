@@ -5,7 +5,7 @@ categories: [Railways, Analysis, London]
 tags: [railway, analysis, visualization, london, glasgow, cancellations, uk]
 ---
 
-# Londoners waited nearly 8 lifetimes for cancelled trains in 2025
+## Glasgow tops the cities. A small town in Sussex tops everywhere.
 
 I have been collecting train service data from National Rail — storing each train's movements, delays and cancellations. I am now working on developing new analysis and visualisations to show this data, along with holding the bodies that run our railways accountable. In the last article, we explored the number of cancellations each station has seen over the last year. Today we're going to be diving into cancellation impact, and finding that while Londoners waited nearly 8 lifetimes for cancelled trains, there are towns and cities that feel the impact more acutely.
 
