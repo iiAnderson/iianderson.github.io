@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>City Impact - UK Rail Cancellations 2025</title>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script crossorigin src="https://unpkg.com/prop-types/prop-types.min.js"></script>
+<script crossorigin src="https://unpkg.com/recharts@2/umd/Recharts.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f0f2f5;color:#1a1a2e;padding:20px}
+.dashboard{max-width:1400px;margin:0 auto}
+.header{margin-bottom:20px}
+.header h1{font-size:22px;font-weight:700;color:#1e293b}
+.header p{font-size:13px;color:#6b7280;margin-top:4px}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:#fff;border-radius:10px;padding:16px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.stat-card .value{font-size:24px;font-weight:700;color:#2563eb}
+.stat-card .label{font-size:11px;color:#6b7280;margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+.card{background:#fff;border-radius:10px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.card h2{font-size:16px;font-weight:600;margin-bottom:14px;color:#1e293b}
+.controls{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.controls label{font-size:12px;color:#6b7280}
+.btn{padding:5px 14px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;background:#fff;cursor:pointer;transition:all .15s}
+.btn:hover{border-color:#9ca3af}
+.btn.active{background:#2563eb;color:#fff;border-color:#2563eb}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;padding:8px 10px;border-bottom:2px solid #e5e7eb;font-weight:600;color:#374151;cursor:pointer;user-select:none}
+th:hover{color:#2563eb}
+td{padding:6px 10px;border-bottom:1px solid #f3f4f6}
+tr:hover td{background:#f8fafc}
+.search-box{width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;margin-bottom:10px}
+.sub-row td{background:#f8fafc;font-size:11px;color:#6b7280}
+.sub-row td:first-child{padding-left:30px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="data/city_impact.js"></script>
+<script type="text/babel">
+const {BarChart,Bar,XAxis,YAxis,CartesianGrid,Tooltip,ResponsiveContainer,
+       ScatterChart,Scatter,ZAxis,Cell,ReferenceLine,LabelList} = Recharts;
+
+const fmt = n => {
+  if (n == null) return '0';
+  if (Math.abs(n) >= 1e6) return (n/1e6).toFixed(1)+'M';
+  if (Math.abs(n) >= 1e3) return (n/1e3).toFixed(1)+'K';
+  return Math.round(n).toLocaleString();
+};
+
+const fmtPop = n => {
+  if (n >= 1e6) return (n/1e6).toFixed(1)+'M';
+  if (n >= 1e3) return (n/1e3).toFixed(0)+'K';
+  return n.toLocaleString();
+};
+
+const getColor = cpp => {
+  if (cpp >= 4.0) return '#dc2626';
+  if (cpp >= 3.0) return '#ea580c';
+  if (cpp >= 2.0) return '#d97706';
+  if (cpp >= 1.0) return '#2563eb';
+  return '#059669';
+};
+
+const METRIC_LABELS = {
+  cpp: 'Cancellations Per Person',
+  sp10k: 'Services per 10K Pop',
+  aps: 'Avg Affected per Service',
+};
+
+const METRIC_FORMATS = {
+  cpp: d => `${d.cpp.toFixed(2)} cancellations per person`,
+  sp10k: d => `${d.sp10k.toFixed(1)} services per 10K pop`,
+  aps: d => `${d.aps.toFixed(1)} avg affected per service`,
+};
+
+const CustomTooltip = ({active, payload, metric}) => {
+  if (!active || !payload?.length) return null;
+  const d = payload[0].payload;
+  const m = metric || 'cpp';
+  return (
+    <div style={{background:'#fff',border:'1px solid #e5e7eb',borderRadius:8,padding:'10px 14px',boxShadow:'0 4px 6px rgba(0,0,0,.1)',maxWidth:280}}>
+      <p style={{fontWeight:700,marginBottom:6,fontSize:14}}>{d.c}</p>
+      <p style={{fontSize:13,color:getColor(d.cpp),fontWeight:600}}>{METRIC_FORMATS[m](d)}</p>
+      <div style={{fontSize:11,color:'#6b7280',marginTop:4,lineHeight:'18px'}}>
+        <p>Population: {fmtPop(d.pop)}</p>
+        <p>Total affected: {fmt(d.ta)}</p>
+        <p>Cancelled services: {d.cs.toLocaleString()}</p>
+        {m !== 'cpp' && <p>Per person: {d.cpp.toFixed(2)}</p>}
+        {m !== 'sp10k' && <p>Services/10K pop: {d.sp10k.toFixed(1)}</p>}
+        {m !== 'aps' && <p>Avg per service: {d.aps.toFixed(1)}</p>}
+        <p>Stations in top 100: {d.n}</p>
+      </div>
+    </div>
+  );
+};
+
+const App = () => {
+  const [metric, setMetric] = React.useState('cpp');
+  const [popFilter, setPopFilter] = React.useState(0);
+  const [search, setSearch] = React.useState('');
+  const [sortCol, setSortCol] = React.useState('cpp');
+  const [sortAsc, setSortAsc] = React.useState(false);
+  const [expanded, setExpanded] = React.useState(null);
+
+  const allCities = DATA.cities;
+  const allStations = DATA.stations;
+
+  const filtered = React.useMemo(() =>
+    allCities.filter(d => d.pop >= popFilter),
+  [popFilter]);
+
+  const chartSorted = React.useMemo(() =>
+    [...filtered].sort((a,b) => b[metric] - a[metric]),
+  [filtered, metric]);
+
+  const popCounts = React.useMemo(() => ({
+    0: allCities.length,
+    100000: allCities.filter(d => d.pop >= 100000).length,
+    500000: allCities.filter(d => d.pop >= 500000).length,
+  }), []);
+
+  // Table sorting
+  const tableSorted = React.useMemo(() => {
+    const q = search.toLowerCase();
+    let list = filtered;
+    if (q) list = list.filter(d => d.c.toLowerCase().includes(q));
+    const s = [...list];
+    s.sort((a,b) => {
+      if (sortCol === 'c') return sortAsc ? a.c.localeCompare(b.c) : b.c.localeCompare(a.c);
+      return sortAsc ? a[sortCol] - b[sortCol] : b[sortCol] - a[sortCol];
+    });
+    return s;
+  }, [filtered, search, sortCol, sortAsc]);
+
+  const handleSort = col => {
+    if (sortCol === col) setSortAsc(!sortAsc);
+    else { setSortCol(col); setSortAsc(false); }
+  };
+  const sortIcon = col => sortCol === col ? (sortAsc ? ' \u25B2' : ' \u25BC') : '';
+
+  const totalAff = allCities.reduce((s,d) => s+d.ta, 0);
+  const topCity = allCities[0];
+  const weightedCpp = totalAff / allCities.reduce((s,d) => s+d.pop, 0);
+
+  // Scatter data
+  const scatterData = filtered.map(d => ({...d, x: d.pop, y: d.cpp}));
+
+  // Decomposition: top 15 by each sub-metric
+  const decompFreq = [...filtered].sort((a,b) => b.sp10k - a.sp10k).slice(0, 15);
+  const decompSev = [...filtered].sort((a,b) => b.aps - a.aps).slice(0, 15);
+
+  // Stations for a city
+  const cityStations = city => allStations.filter(s => s.c === city).sort((a,b) => b.ta - a.ta);
+
+  return (
+    <div className="dashboard">
+      <div className="header">
+        <h1>City Impact Analysis</h1>
+        <p>Cancellation passenger impact aggregated by city/town — top 100 stations grouped into {allCities.length} cities (2025, airports excluded)</p>
+      </div>
+
+      <div className="stats-row">
+        <div className="stat-card"><div className="value">{allCities.length}</div><div className="label">Cities Compared</div></div>
+        <div className="stat-card"><div className="value" style={{color:getColor(topCity.cpp)}}>{topCity.cpp.toFixed(2)}</div><div className="label">Highest Per Person ({topCity.c})</div></div>
+        <div className="stat-card"><div className="value">{fmt(totalAff)}</div><div className="label">Total Passengers Affected</div></div>
+        <div className="stat-card"><div className="value">{weightedCpp.toFixed(2)}</div><div className="label">Weighted Average Per Person</div></div>
+      </div>
+
+      {/* Filters */}
+      <div className="card" style={{padding:'12px 20px'}}>
+        <div className="controls" style={{marginBottom:0}}>
+          <label style={{fontWeight:600}}>Population:</label>
+          {[[0,'All'],[100000,'> 100K'],[500000,'> 500K']].map(([v,label]) =>
+            <button key={v} className={popFilter===v?'btn active':'btn'} onClick={()=>setPopFilter(v)}>
+              {label} ({popCounts[v]})
+            </button>
+          )}
+          <span style={{borderLeft:'1px solid #d1d5db',height:20,margin:'0 4px'}}/>
+          <label style={{fontWeight:600}}>Metric:</label>
+          {Object.entries(METRIC_LABELS).map(([k,label]) =>
+            <button key={k} className={metric===k?'btn active':'btn'} onClick={()=>setMetric(k)}>{label}</button>
+          )}
+        </div>
+      </div>
+
+      {/* Scatter chart */}
+      <div className="card">
+        <h2>Population vs Cancellations Per Person</h2>
+        <p style={{fontSize:12,color:'#6b7280',marginBottom:10}}>Bubble size = total affected passengers. Cities above the dashed line exceed the weighted national average.</p>
+        <ResponsiveContainer width="100%" height={480}>
+          <ScatterChart margin={{top:20,right:40,bottom:40,left:60}}>
+            <CartesianGrid strokeDasharray="3 3"/>
+            <XAxis type="number" dataKey="x" name="Population" scale="log" domain={['auto','auto']}
+              tickFormatter={fmtPop} label={{value:'Metro Population',position:'bottom',offset:20,style:{fontSize:12}}}/>
+            <YAxis type="number" dataKey="y" name="Per Person" domain={[0,'auto']}
+              label={{value:'Cancellations Per Person',angle:-90,position:'left',offset:40,style:{fontSize:12}}}/>
+            <ZAxis type="number" dataKey="ta" range={[40,800]} name="Total Affected"/>
+            <ReferenceLine y={weightedCpp} stroke="#9ca3af" strokeDasharray="6 4" label={{value:`Avg: ${weightedCpp.toFixed(2)}`,position:'right',style:{fontSize:11,fill:'#9ca3af'}}}/>
+            <Tooltip content={<CustomTooltip metric={metric}/>}/>
+            <Scatter data={scatterData}>
+              {scatterData.map((d,i) => <Cell key={i} fill={getColor(d.cpp)} fillOpacity={0.75}/>)}
+              <LabelList dataKey="c" position="top" style={{fontSize:10,fill:'#374151',pointerEvents:'none'}}/>
+            </Scatter>
+          </ScatterChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Decomposition */}
+      <div className="card">
+        <h2>What Drives Per-Person Impact?</h2>
+        <p style={{fontSize:12,color:'#6b7280',marginBottom:14}}>
+          High per-person impact comes from high <strong>frequency</strong> of cancellations relative to population (left),
+          high <strong>severity</strong> per individual cancellation due to long/busy routes (right), or both.
+          Glasgow's impact is driven by severity — long ScotRail suburban routes amplify each cancellation.
+          Smaller commuter towns like Haywards Heath and St Albans rank high on frequency due to their small populations relative to busy London-bound services.
+        </p>
+        <div className="grid-2">
+          <div>
+            <h2 style={{fontSize:14}}>Cancellation Frequency (Services per 10K Pop)</h2>
+            <ResponsiveContainer width="100%" height={Math.max(300, decompFreq.length * 26)}>
+              <BarChart data={decompFreq} layout="vertical" margin={{left:120,right:30,top:5,bottom:5}}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false}/>
+                <XAxis type="number" tickFormatter={v=>v.toFixed(0)}/>
+                <YAxis type="category" dataKey="c" width={110} tick={{fontSize:11}} interval={0}/>
+                <Tooltip content={<CustomTooltip metric="sp10k"/>}/>
+                <Bar dataKey="sp10k" radius={[0,4,4,0]}>
+                  {decompFreq.map((d,i) => <Cell key={i} fill={getColor(d.cpp)}/>)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <div>
+            <h2 style={{fontSize:14}}>Cancellation Severity (Avg Affected per Service)</h2>
+            <ResponsiveContainer width="100%" height={Math.max(300, decompSev.length * 26)}>
+              <BarChart data={decompSev} layout="vertical" margin={{left:120,right:30,top:5,bottom:5}}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false}/>
+                <XAxis type="number" tickFormatter={fmt}/>
+                <YAxis type="category" dataKey="c" width={110} tick={{fontSize:11}} interval={0}/>
+                <Tooltip content={<CustomTooltip metric="aps"/>}/>
+                <Bar dataKey="aps" radius={[0,4,4,0]}>
+                  {decompSev.map((d,i) => <Cell key={i} fill={getColor(d.cpp)}/>)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Detail table */}
+      <div className="card">
+        <h2>All Cities</h2>
+        <input className="search-box" placeholder="Search by city name..." value={search} onChange={e=>setSearch(e.target.value)}/>
+        <div style={{maxHeight:600,overflow:'auto'}}>
+          <table>
+            <thead><tr>
+              <th onClick={()=>handleSort('c')}>City{sortIcon('c')}</th>
+              <th onClick={()=>handleSort('n')}>Stations{sortIcon('n')}</th>
+              <th onClick={()=>handleSort('pop')}>Population{sortIcon('pop')}</th>
+              <th onClick={()=>handleSort('ta')}>Total Affected{sortIcon('ta')}</th>
+              <th onClick={()=>handleSort('cs')}>Services{sortIcon('cs')}</th>
+              <th onClick={()=>handleSort('cpp')}>Per Person{sortIcon('cpp')}</th>
+              <th onClick={()=>handleSort('sp10k')}>Svc/10K Pop{sortIcon('sp10k')}</th>
+              <th onClick={()=>handleSort('aps')}>Per Service{sortIcon('aps')}</th>
+            </tr></thead>
+            <tbody>
+              {tableSorted.map(d => (
+                <React.Fragment key={d.c}>
+                  <tr style={{cursor:'pointer'}} onClick={()=>setExpanded(expanded===d.c?null:d.c)}>
+                    <td>
+                      <strong>{d.c}</strong>
+                      <span style={{marginLeft:6,fontSize:10,color:'#9ca3af'}}>{expanded===d.c?'\u25B2':'\u25BC'}</span>
+                    </td>
+                    <td>{d.n}</td>
+                    <td>{fmtPop(d.pop)}</td>
+                    <td>{fmt(d.ta)}</td>
+                    <td>{d.cs.toLocaleString()}</td>
+                    <td style={{fontWeight:600,color:getColor(d.cpp)}}>{d.cpp.toFixed(2)}</td>
+                    <td>{d.sp10k.toFixed(1)}</td>
+                    <td>{d.aps.toFixed(1)}</td>
+                  </tr>
+                  {expanded===d.c && cityStations(d.c).map(s => (
+                    <tr key={s.s} className="sub-row">
+                      <td><span style={{color:'#2563eb',fontWeight:500}}>{s.s}</span> {s.n.replace(' Rail Station','')}</td>
+                      <td></td>
+                      <td></td>
+                      <td>{fmt(s.ta)}</td>
+                      <td>{s.cs.toLocaleString()}</td>
+                      <td></td>
+                      <td></td>
+                      <td>{s.aps.toFixed(1)}</td>
+                    </tr>
+                  ))}
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

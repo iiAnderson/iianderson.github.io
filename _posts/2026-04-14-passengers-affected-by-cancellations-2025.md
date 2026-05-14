@@ -92,7 +92,7 @@ What does this look like if we scale up to 100 stations? Below is a visualisatio
 
 As Haywards Heath sits on the Brighton Main Line, which feeds into the Thameslink core, delays from Bedford, Cambridge, and Kent can ripple south, and the town sits squarely in the cascade zone.
 
-<iframe src="/assets/visualizations/20260414-station_impact_standalone.html" width="100%" height="1000" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;"></iframe>
+<iframe src="/assets/visualizations/20260414-city-impact.html" width="100%" height="1000" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;"></iframe>
 
 So what does this tell us? It suggests some systemic issues with the services in and around Glasgow, with the city's stats showing cancellations are far worse than its counterparts — with only London coming close in terms of passengers affected per resident.
 
