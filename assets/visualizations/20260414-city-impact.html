@@ -194,12 +194,12 @@ const App = () => {
         <h2>Population vs Cancellations Per Person</h2>
         <p style={{fontSize:12,color:'#6b7280',marginBottom:10}}>Bubble size = total affected passengers. Cities above the dashed line exceed the weighted national average.</p>
         <ResponsiveContainer width="100%" height={480}>
-          <ScatterChart margin={{top:20,right:40,bottom:40,left:60}}>
+          <ScatterChart margin={{top:20,right:30,bottom:30,left:20}}>
             <CartesianGrid strokeDasharray="3 3"/>
             <XAxis type="number" dataKey="x" name="Population" scale="log" domain={['auto','auto']}
-              tickFormatter={fmtPop} label={{value:'Metro Population',position:'bottom',offset:20,style:{fontSize:12}}}/>
+              tickFormatter={fmtPop} label={{value:'Metro Population',position:'bottom',offset:10,style:{fontSize:12}}}/>
             <YAxis type="number" dataKey="y" name="Per Person" domain={[0,'auto']}
-              label={{value:'Cancellations Per Person',angle:-90,position:'left',offset:40,style:{fontSize:12}}}/>
+              label={{value:'Cancellations Per Person',angle:-90,position:'insideLeft',offset:0,style:{fontSize:12}}}/>
             <ZAxis type="number" dataKey="ta" range={[40,800]} name="Total Affected"/>
             <ReferenceLine y={weightedCpp} stroke="#9ca3af" strokeDasharray="6 4" label={{value:`Avg: ${weightedCpp.toFixed(2)}`,position:'right',style:{fontSize:11,fill:'#9ca3af'}}}/>
             <Tooltip content={<CustomTooltip metric={metric}/>}/>
