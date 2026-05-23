@@ -9,7 +9,7 @@ Since late 2024, I have been collecting real-time data from National Rail's Darw
 
 The raw tables are powerful, but they are not friendly. Each train service generates multiple messages as its schedule is updated throughout the day, meaning you need to deduplicate across messages, join services to locations, handle sparse fields that only appear in some messages, and account for midnight crossings. A simple question like "was this train cancelled?" requires checking every message for that service and correctly resolving reinstatements.
 
-To make this data accessible, I have built **normalised_v1** — a single, analysis-ready table with **one row per train service**. Delays are pre-computed, cancellation status is resolved, and every calling point is packed into a nested array you can unnest in a single query. The dataset is now available on the [AWS Open Data Registry](https://registry.opendata.aws/), and this post is the reference guide for using it.
+To make this data accessible, I have built **normalised_v1** — a single, analysis-ready table with **one row per train service**. Delays are pre-computed, cancellation status is resolved, and every calling point is packed into a nested array you can unnest in a single query. This post is the reference guide for using it.
 
 Whether you want to study cancellations, delays, overcrowding, or just explore what trains ran on a given day — this dataset is designed to get you from question to answer in a single query.
 
