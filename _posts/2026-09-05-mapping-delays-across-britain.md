@@ -19,7 +19,7 @@ It started months ago, where I attempted my first prototype. This took each pair
 This strategy worked to a point, once I had my computed route geometries (I called segments) we could map a service by walking its TIPLOC points and adding them to the graph. However, data got in my way. Many services only reported some of their TIPLOC points - not all of them. This was especially bad on quad-track sections, where fast services would skip stations entirely. The algorithm would then plot these fast services as a straight line, skipping the intermediate stations.
 
 ![The first attempt, showing many straight lines skipping intermediary stations]({{ TODO: image path }})
-*The first attempt, showing many straight lines skipping intermediary stations.*
+![Alt text](https://blog.robbiea.co.uk/assets/img/failed-map-1.png "The first attempt, showing many straight lines skipping intermediary stations")
 
 While this had some usefulness, the chaotic lines made the visualisation hard to understand and often meant there were two lines representing a single bit of track - not very useful. A new strategy was needed.
 
@@ -29,13 +29,11 @@ I'd hit a brick wall with the above approach. The Darwin data ([TODO: reference]
 
 So what's next? I decided to take a different tack, drawing inspiration from network diagrams, as opposed to real maps. What if we used all the junctions on the network and used them as nodes in our graph. We could then just represent a service as an edge on that (simplified) graph, and not rely on real-life segments at all. It would show links between each major point on the graph clearly.
 
-![An attempt at a network map in the Bristol region, showing edges between junctions]({{ TODO: image path }})
-*An attempt at a network map in the Bristol region, showing edges between junctions.*
+![Alt text](https://blog.robbiea.co.uk/assets/img/failed-map-2.png "An attempt at a network map in the Bristol region, showing edges between junctions")
 
 The reality was not that. For example, this area around Bristol seems to show two lines going north - one to Gloucester, one to Cheltenham. This isn't true, there's one line that splits just outside of Gloucester. This didn't represent what I wanted - and for more complex areas, such as around Leeds, it showed so little information it was broadly useless. Maybe this would work for only the major cities of the UK - but not for what I wanted.
 
-![The network diagram, showing the Leeds area]({{ TODO: image path }})
-*The network diagram, showing the Leeds area.*
+![Alt text](https://blog.robbiea.co.uk/assets/img/failed-map-3.png "The network diagram, showing the Leeds area")
 
 ## The route to victory
 
