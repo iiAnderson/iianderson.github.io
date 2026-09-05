@@ -18,14 +18,13 @@ It started months ago, where I attempted my first prototype. This took each pair
 
 This strategy worked to a point, once I had my computed route geometries (I called segments) we could map a service by walking its TIPLOC points and adding them to the graph. However, data got in my way. Many services only reported some of their TIPLOC points - not all of them. This was especially bad on quad-track sections, where fast services would skip stations entirely. The algorithm would then plot these fast services as a straight line, skipping the intermediate stations.
 
-![The first attempt, showing many straight lines skipping intermediary stations]({{ TODO: image path }})
 ![Alt text](https://blog.robbiea.co.uk/assets/img/failed-map-1.png "The first attempt, showing many straight lines skipping intermediary stations")
 
 While this had some usefulness, the chaotic lines made the visualisation hard to understand and often meant there were two lines representing a single bit of track - not very useful. A new strategy was needed.
 
 ## A crisis of confidence
 
-I'd hit a brick wall with the above approach. The Darwin data ([TODO: reference]) was just not good enough - too many services didn't report stops (or my ingestion missed them - always an option!).
+I'd hit a brick wall with the above approach. The Darwin data was just not good enough - too many services didn't report stops (or my ingestion missed them - always an option!).
 
 So what's next? I decided to take a different tack, drawing inspiration from network diagrams, as opposed to real maps. What if we used all the junctions on the network and used them as nodes in our graph. We could then just represent a service as an edge on that (simplified) graph, and not rely on real-life segments at all. It would show links between each major point on the graph clearly.
 
@@ -37,7 +36,7 @@ The reality was not that. For example, this area around Bristol seems to show tw
 
 ## The route to victory
 
-After scrolling through dataset after dataset, I came across Network Rail's (the infrastructure operator in the UK) route diagrams ([TODO: reference]). They contain information on segments of track, along with route geometries - perfect for my use case!
+After scrolling through dataset after dataset, I came across Network Rail's (the infrastructure operator in the UK) [route diagrams](https://raildata.org.uk/dashboard/dataProduct/P-9b4e960e-8bb6-438b-9722-34ae5768a48f/overview). They contain information on segments of track, along with route geometries - perfect for my use case!
 
 Most of the segments are short in length - so worked well for the visualisation, but there were some mammoth ones - one over 200km! That's not very representative - as thousands of services would be included in that segment, even if they only traversed a small section. These needed to be split up.
 
@@ -94,3 +93,8 @@ Back to the delays - it looks like there are two key lines which feature heavily
 Given what we've just said about the reliability of the London commuter lines, it's strange to see a commuter line for another major city feature, despite its frequency. It also seems that the reliability of Merseyrail has been declining considerably in the last few years ([ORR Merseyrail key statistics](https://dataportal.orr.gov.uk/media/nraby20z/merseyrail-key-stats.pdf)), dropping 15 percentage points since 2021 - although this has coincided with 50% more services running on the lines. This, with the introduction of a fleet transition to new trains, has likely impacted the service more than usual.
 
 These are just a few of the interesting tidbits I've discovered from this map - please let me know about anything you've found in the comments below.
+
+
+### References
+Darwin Data Feeds: https://www.nationalrail.co.uk/developers/darwin-data-feeds/
+Rail Data Marketplace: https://raildata.org.uk/
