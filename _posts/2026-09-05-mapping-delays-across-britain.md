@@ -8,13 +8,13 @@ tags: [railway, dataset, aws, open-data, darwin, visualisation, documentation]
 
 For a while now, I've wanted to create a network-wide visualisation showing statistics about each section of track: how many services it carries, how delayed it is, or how many cancellations there have been. This has proven to be a complex task - requiring the joining of many complex datasets, no small amount of manual verification, and lots of Claude tokens. Today, we're going to explore how I created the below visualisation, and what data was needed to bring it to life. Once we've done that, we'll spend a bit of time exploring the visualisation, noting interesting patterns.
 
-An interactive map of the UK's rail routes, over all of 2025. ([https://rail.robbiea.co.uk/tracks.html](https://rail.robbiea.co.uk/tracks.html))
+An interactive map of the UK's rail routes, over all of 2025.
 
 <iframe src="https://rail.robbiea.co.uk/tracks.html" width="100%" height="1000" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;"></iframe>
 
 ## How did we get here?
 
-It started months ago, where I attempted my first prototype. This took each pair of TIPLOCs - timing point locations, marking "important" points on the railway such as stations or junctions - for a service (for example, Bristol -> Keynsham -> Bath) and used OpenStreetMap ([TODO: reference]) to compute a route between the two points, using only railways. This was incredibly compute heavy - I had ~2,800 TIPLOCs in my database at this point, and we needed to compute maps for each of the points nearest neighbours.
+It started months ago, where I attempted my first prototype. This took each pair of TIPLOCs - timing point locations, marking "important" points on the railway such as stations or junctions - for a service (for example, Bristol -> Keynsham -> Bath) and used OpenStreetMap to compute a route between the two points, using only railways. This was incredibly compute heavy - I had ~2,800 TIPLOCs in my database at this point, and we needed to compute maps for each of the points nearest neighbours.
 
 This strategy worked to a point, once I had my computed route geometries (I called segments) we could map a service by walking its TIPLOC points and adding them to the graph. However, data got in my way. Many services only reported some of their TIPLOC points - not all of them. This was especially bad on quad-track sections, where fast services would skip stations entirely. The algorithm would then plot these fast services as a straight line, skipping the intermediate stations.
 
@@ -51,6 +51,8 @@ For now, I've accepted that my numbers may be slightly off, and called it quits 
 This map shows the UK rail network - coloured by the total delay for each segment. This delay metric is computed as the lateness of each service through a given section - so a train that's 30 minutes delayed will contribute 30 minutes of delay to each segment it passes through. You can also see the average delay, which is the average delay of any service passing through the segment.
 
 The width of the routes denotes the number of services - hence there are some thick lines around London! You can also filter by train operating company, number of services and delay/cancellations.
+
+<iframe src="https://rail.robbiea.co.uk/tracks.html" width="100%" height="1000" frameborder="0" style="border: 1px solid #ddd; border-radius: 8px; margin: 20px 0;"></iframe>
 
 The first thing that jumps out here is the red line snaking from London towards Birmingham and Manchester. This is the West Coast Mainline and judging from this visualisation it's the most delayed major line in the country; with an average delay of around 5-6 minutes. Most other longer-distance lines don't fare much better, with the East Coast Main Line coming in around 4-5 minutes, and the Great Western Main Line at ~3 minutes. This is in contrast to the web of commuter lines around London - many of these sit at less than 2 minutes delayed on average - impressive given the number of services that run across these lines.
 
