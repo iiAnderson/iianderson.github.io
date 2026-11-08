@@ -198,7 +198,7 @@ const App = () => {
             <CartesianGrid strokeDasharray="3 3"/>
             <XAxis type="number" dataKey="x" name="Population" scale="log" domain={['auto','auto']}
               tickFormatter={fmtPop} label={{value:'Metro Population',position:'bottom',offset:10,style:{fontSize:12}}}/>
-            <YAxis type="number" dataKey="y" name="Per Person" domain={[0,'auto']}
+            <YAxis type="number" dataKey="y" name="Per Person" domain={[0, dataMax => Math.ceil(dataMax + 0.5)]}
               label={{value:'Cancellations Per Person',angle:-90,position:'insideLeft',offset:0,style:{fontSize:12}}}/>
             <ZAxis type="number" dataKey="ta" range={[40,800]} name="Total Affected"/>
             <ReferenceLine y={weightedCpp} stroke="#9ca3af" strokeDasharray="6 4" label={{value:`Avg: ${weightedCpp.toFixed(2)}`,position:'right',style:{fontSize:11,fill:'#9ca3af'}}}/>
